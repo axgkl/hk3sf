@@ -1,0 +1,9 @@
+echo -e '
+ssh b to enable the portforwarding to the bastion host. 
+💡getkubconfig copies it from bastion
+'
+
+function getkubeconfig {
+  scp b:kubeconfig .
+  sed -i 's|https://[^:]*:|https://127.0.0.1:|' ./kubeconfig
+}

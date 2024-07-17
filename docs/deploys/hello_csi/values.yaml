@@ -1,0 +1,17 @@
+# values.yaml
+image:
+  repository: nginx
+  tag: 1.19.3
+vars:
+  VAR_1: "value 1"
+  VAR_2: "value 2"
+ingress:
+  host: hey.65.109.42.118.nip.io
+  port: 82
+  ingressClassName: nginx
+volumes:
+  - name: data
+    path: /data
+    size: 10Gi
+    storageClass: hcloud-volumes
+

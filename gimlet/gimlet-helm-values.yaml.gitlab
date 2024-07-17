@@ -1,0 +1,26 @@
+image:
+  repository: ghcr.io/gimlet-io/gimlet
+  tag: v0.26.0
+containerPort: 9000
+probe:
+  enabled: true
+  path: /
+vars:
+  HOST: "http://127.0.0.1:9000"
+  API_HOST: http://gimlet.default.svc.cluster.local:9000
+  TRACE: true
+  DEBUG: true
+  GITLAB_CLIENT_ID:  "90a4b29dd7813e43b9c1cec596f115b2a86fec0f64da6b384bbdc580e62bd229"
+  GITLAB_CLIENT_SECRET: "gloas-3d8b1e30c838f4a73ccb65d25052d77cd5efea25237355a4e673a2ebd7a077b1"
+  GITLAB_ADMIN_TOKEN: "glpat-5mm9gjgKbNrqZ7CUoGgQ"
+  GITLAB_DEBUG: true
+  GITLAB_ORG: "klessinger"
+  GITLAB_URL: "https://gitlab.axiros.com"
+
+  FEATURE_POSTHOG: false
+resources:
+  ignoreLimits: true
+volumes:
+  - name: data
+    path: /var/lib/gimlet-dashboard
+    size: 1Gi

@@ -1,0 +1,135 @@
+---
+# Source: onechart/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-release
+  namespace: default
+  labels:
+    helm.sh/chart: onechart-0.69.0
+    app.kubernetes.io/name: onechart
+    app.kubernetes.io/instance: my-release
+    app.kubernetes.io/managed-by: Helm
+data:
+  VAR_1: "value 1"
+  VAR_2: "value 2"
+---
+# Source: onechart/templates/pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-release-data
+  namespace: default 
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: hcloud-volumes
+  resources:
+    requests:
+      storage: 10Gi
+---
+# Source: onechart/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-release
+  namespace: default
+  labels:
+    helm.sh/chart: onechart-0.69.0
+    app.kubernetes.io/name: onechart
+    app.kubernetes.io/instance: my-release
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: onechart
+    app.kubernetes.io/instance: my-release
+---
+# Source: onechart/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-release
+  namespace: default
+  labels:
+    helm.sh/chart: onechart-0.69.0
+    app.kubernetes.io/name: onechart
+    app.kubernetes.io/instance: my-release
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    kubectl.kubernetes.io/default-container: my-release
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: onechart
+      app.kubernetes.io/instance: my-release
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        checksum/config: c6aa95c3d87f81605b53fd759f8a6f9764968b60be2915f8bc6bca839745f2c9
+      labels:
+        app.kubernetes.io/name: onechart
+        app.kubernetes.io/instance: my-release
+    spec:
+      containers:
+      - envFrom:
+        - configMapRef:
+            name: my-release
+        image: nginx:1.19.3
+        imagePullPolicy: IfNotPresent
+        name: my-release
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 200m
+            memory: 200Mi
+          requests:
+            cpu: 200m
+            memory: 200Mi
+        securityContext: {}
+        volumeMounts:
+        - mountPath: /data
+          name: data
+      initContainers: null
+      securityContext:
+        fsGroup: 999
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: my-release-data
+---
+# Source: onechart/templates/ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: my-release
+  namespace: default
+  labels:
+    helm.sh/chart: onechart-0.69.0
+    app.kubernetes.io/name: onechart
+    app.kubernetes.io/instance: my-release
+    app.kubernetes.io/managed-by: Helm
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: "hey.65.109.42.118.nip.io"
+      http:
+        paths:
+          - path: "/"
+            pathType: "Prefix"
+            backend:
+              service:
+                name: my-release
+                port:
+                  number: 80

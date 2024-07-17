@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: xhello-world
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: xhello-world
+  template:
+    metadata:
+      labels:
+        app: xhello-world
+    spec:
+      containers:
+      - name: xhello-world
+        image: k8s.gcr.io/echoserver:1.4
+        ports:
+        - containerPort: 8080
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: "app"
+                operator: In
+                values: 
+                - xhello-world
+            topologyKey: "kubernetes.io/hostname"
+
