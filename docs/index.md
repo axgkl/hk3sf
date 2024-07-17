@@ -344,8 +344,8 @@ Try k9s now - you have your cluster.
 If new to this world, check these:
 
 - [ingress](./k8s_ingress.md)
-- [csi](./k8s_csi.md)
 - [autoscaling](./k8s_autoscaler.md)
+- [csi](./k8s_csi.md)
 
 
 
