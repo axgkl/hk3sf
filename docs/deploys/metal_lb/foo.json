@@ -1,0 +1,42 @@
+{
+  "apps": {
+    "layer4": {
+      "servers": {
+        "secure-imap": {
+          "listen": ["0.0.0.0:993"],
+          "routes": [
+            {
+              "handle": [
+                {
+                  "handler": "tls"
+                },
+                {
+                  "handler": "proxy",
+                  "proxy_protocol": "v1",
+                  "upstreams": [{ "dial": ["localhost:143"] }]
+                }
+              ]
+            }
+          ]
+        },
+        "normal-imap": {
+          "listen": ["0.0.0.0:143"],
+          "routes": [
+            {
+              "handle": [
+                {
+                  "handler": "proxy_protocol"
+                },
+                {
+                  "handler": "proxy",
+                  "proxy_protocol": "v2",
+                  "upstreams": [{ "dial": ["localhost:1143"] }]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,33 @@
+contour:
+  extraArgs:
+    - --use-proxy-protocol
+envoy:
+  kind: deployment
+  replicaCount: 3
+  useHostPort: false
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 35%
+      maxUnavailable: 35%
+  service:
+    externalTrafficPolicy: Local
+    type: NodePort
+    nodePorts:
+      http: "30080"
+      https: "30443"
+  affinity:
+    # nodeAffinity:
+    #   requiredDuringSchedulingIgnoredDuringExecution:
+    #     nodeSelectorTerms:
+    #       - matchExpressions:
+    #           - key: axiros.axess/agent
+    #             operator: Exists
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: contour
+              app.kubernetes.io/instance: contour
+              app.kubernetes.io/component: envoy
+          topologyKey: kubernetes.io/hostname

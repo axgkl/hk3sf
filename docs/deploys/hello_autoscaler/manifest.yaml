@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: xhello-world
 spec:
-  replicas: 4
+  replicas: 5
   selector:
     matchLabels:
       app: xhello-world
@@ -27,4 +27,21 @@ spec:
                 values: 
                 - xhello-world
             topologyKey: "kubernetes.io/hostname"
-
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: xhello-world
+spec:
+  ingressClassName: caddy
+  rules:
+  - host: foo2.k3s.axlc.net
+    http:
+      paths:
+      - path: /x
+        pathType: Prefix
+        backend:
+          service:
+            name: xhello-world
+            port:
+              number: 80

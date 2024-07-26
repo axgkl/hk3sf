@@ -1,0 +1,9 @@
+# nodeSelector:
+#   kubernetes.io/hostname: bast
+replicaCount: 2
+ingressController:
+  config:
+    debug: true
+    email: "gk@axiros.com"
+    onDemandTLS: false
+    proxyProtocol: true

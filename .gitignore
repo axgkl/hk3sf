@@ -1,3 +1,7 @@
 kubeconfig
 redis
 traefik
+mm
+inst
+nginx_ingress
+tmp

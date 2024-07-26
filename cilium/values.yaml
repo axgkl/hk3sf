@@ -1,0 +1,95 @@
+name: cilium
+  
+#When using cluster mesh id must be between 1-255, 0 disable
+cluster:
+  name: k3s-cluster
+  id: 0
+  
+#For HA we should have a LB  or dns round-robin to spread the requests to all api-server
+k8sServiceHost: 10.0.0.5
+k8sServicePort: 6443
+  
+agent: true
+rollOutCiliumPods: true
+  
+nodeinit:
+  enable: true
+  
+debug:
+  enabled: no
+  
+# Tunnelling mode
+ 
+tunnel: "geneve"
+  
+# Relevante for native routing only (tunnelling - disable) - routes added by cilium
+autoDirectNodeRoutes: false
+  
+  
+# BPF
+bpf:
+  #Use BPF for masquerade isntead of IPTABLES
+  masquerade: true
+  #Packets should pass Host network stack (needed if IPtables needed to be checked) or not (more performant)
+  hostRouting: false
+  #If true will bypass mac table lookup on replies to ingress packet of nodeport (may cause problem with VRRP or HSRP)
+  lbBypassFIBLookup: false
+  tproxy: true
+  
+#do not deploy iptables for (L7 proxy injection), iptables-based masquerading and compatibility with kube-proxy
+#l7Proxy disable Layer 7 network policy, if they are needed both options need to be true
+installIptablesRules: false
+l7Proxy: false
+  
+# Kube-Proxy replacement
+kubeProxyReplacement: "strict"
+kubeProxyReplacementHealthzBindAddr: "0.0.0.0:10256"
+  
+#Set the range where the IP will not be masqueraded (Native routing)
+ipv4NativeRoutingCIDR: "10.0.0.0/16"
+  
+  
+#The responsible to assign node pod CIDR, "kubernetes" and "cluster-pool" are similar kubernetes or cilium operator are the providers
+ipam:
+  mode: "kubernetes"
+  
+  
+#Cilium will remove the endpoint from the available ones and leave existing connections terminate gracefully until delete event
+enableK8sTerminatingEndpoint: true
+  
+# Hubble/Observability
+hubble:
+  enabled: true
+  metrics:
+    enabled:
+      - dns:query;ignoreAAAA
+      - drop
+      - tcp
+      - flow
+      - icmp
+      - http
+  relay:
+    enabled: true
+    rollOutPods: true
+    tls:
+      server:
+        enable: false
+  ui:
+    enabled: true
+    standalone:
+      enabled: false
+    rollOutPods: true
+  
+ipv4:
+  enabled: true
+ipv6:
+  enabled: false
+  
+# -- Configure the host firewall.
+hostFirewall:
+  # -- Enables the enforcement of host policies in the eBPF datapath.
+  enabled: yes
+
+# Number of cilium operator replicas
+operator:
+  replicas: 2
