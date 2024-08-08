@@ -41,6 +41,7 @@ DFLT_TYPE="${SERVER:-cx22}"
 : "${SSH_TUNNEL_PORT:=16443}"
 # Until v2 is released, this contains a few patches:
 : "${URL_HETZNER_K3S:=https://github.com/axgkl/binaries/raw/master/hetzner-k3s}"
+# xcaddy with lb4 module added - in use when proxy is lb:
 : "${URL_CADDY:=https://github.com/axgkl/binaries/raw/master/caddy-amd64}"
 : "${VER_K3S:=v1.30.2+k3s2}" # registry mirror requires k3s > 1.30.2
 : "${WORKERS_COUNT:=0}"
