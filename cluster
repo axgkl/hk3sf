@@ -1,10 +1,18 @@
 #!/usr/bin/env bash
 NAME="ax"
 FN_SSH_KEY="ssh_key"
-HCLOUD_TOKEN="$(pass show HCloud/token)"
-HOST_NETWORK=4
+HCLOUD_TOKEN="$(pass show HCloudLoisRO)"
+HCLOUD_TOKEN_WRITE="$(pass show HCloudLois)"
+DNS_API_TOKEN="$(pass show DO/pat)"
+HOST_NETWORK=1
 LOCATION="hel1"
-source "./funcs.sh" "$@"
+EMAIL="wackeldackel@quantentunnel.de"
+DOMAIN="a1.axlc.net"
+DNS_PROVIDER="digitalocean"
+
+d=/home/gk/repos/ax/devapps/gitops
+source "$d/main.sh" "$@"
+
 ensure_local_ssh_key # call, when $FN_SSH_KEY possibly not present
 check_requirements
 #images
@@ -14,5 +22,15 @@ check_requirements
 ensure_proxy_server
 #postinstall "37.27.193.230"
 ensure_k3s_via_proxy
+ensure_proxy_is_loadbalancer
+enable_local_kubectl
 
+ensure_ingress_nginx_with_certmgr
+
+# test_autoscale
+report
+#test_autoscale
 #ensure_k3s
+
+# For your LSP (shellcheck, allows to jump to the functions via gd):
+false && . ./setup.sh && . ./main.sh && . ./pkg/ingress.sh || true

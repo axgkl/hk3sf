@@ -5,3 +5,8 @@ mm
 inst
 nginx_ingress
 tmp
+deploys/nginx
+docs/deploys/hello_autoscaler
+ff
+ssh_key
+ssh_key.pub

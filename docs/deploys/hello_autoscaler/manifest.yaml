@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: xhello-world
+  name: autoscaled-hello-world
 spec:
   replicas: 5
   selector:
     matchLabels:
-      app: xhello-world
+      app: autoscaled-hello-world
   template:
     metadata:
       labels:
-        app: xhello-world
+        app: autoscaled-hello-world
     spec:
       containers:
-      - name: xhello-world
+      - name: autoscaled-hello-world
         image: k8s.gcr.io/echoserver:1.4
         ports:
         - containerPort: 8080
@@ -25,13 +25,13 @@ spec:
               - key: "app"
                 operator: In
                 values: 
-                - xhello-world
+                - autoscaled-hello-world
             topologyKey: "kubernetes.io/hostname"
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: xhello-world
+  name: autoscaled-hello-world
 spec:
   ingressClassName: caddy
   rules:
@@ -42,6 +42,6 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: xhello-world
+            name: autoscaled-hello-world
             port:
               number: 80
