@@ -13,13 +13,14 @@ jobs:
 
       - name: Run tests
         env:
+          run: "${{ github.event.head_commit.message }}"
           HCLOUD_TOKEN: ${{ secrets.HCRO }}
           HCLOUD_TOKEN_WRITE: ${{ secrets.HCRW }}
         run: |
-          if [[ "${{ github.event.head_commit.message }}" == *":secrets:"* ]]; then
+          if [[ "$run" == *":secrets:"* ]]; then
             bash ./tests/test_secrets.sh
           fi
-          if [[ "${{ github.event.head_commit.message }}" == *":setup:"* ]]; then
+          if [[ "$run" == *":setup:"* ]]; then
             bash ./tests/test_setup.sh
           fi
           # Add more tests as needed
