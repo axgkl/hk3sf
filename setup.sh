@@ -146,17 +146,22 @@ function ensure_ip_forwarder {
 }
 
 function download_hetzner_k3s { run ssh "$1" wget -q -N "$2" -O hetzner-k3s >/dev/null; }
-function install_tools { echo -e "$T_TOOLS" | ssh "$1"; }
+function ensure_sshd_cfg_proxy { echo -e "$T_SSHD" | ssh "$1" bash -; }
+function ensure_tools_proxy { echo -e "$T_INST_TOOLS" | ssh "$1" bash -; }
+function ensure_tools_local { eval "$T_INST_TOOLS"; }
 
 # 💡 Installs tools on a new server (hk3s, binenv, kubectl, helm)
 function postinstall {
     # Args: ip of server, normally $IP_PROXY_
+    local fast=false && test "${1:-}" == "fast" && fast=true && shift
     get_proxy_ips
     local ip="${1:-$IP_PROXY_}"
     have="$(ssh "root@$ip" ls /etc)"
     $force || { grep -q "postinstalled" <<<"$have" && { ok "server is postinstalled" && return; }; }
     shw download_hetzner_k3s "root@$ip" "$URL_HETZNER_K3S"
-    shw install_tools "root@$ip"
+    shw ensure_sshd_cfg_proxy "root@$ip"
+    local f=ensure_tools_proxy
+    if $fast; then shw $f "root@$ip" & else shw $f "root@$ip"; fi
     #     apt -y -qq update # post install...
     #     for p in fail2ban unattended-upgrades update-notifier-common; do apt -y -qq install "$p" systemctl enable "$p" systemctl start "$p" done
 }
@@ -422,7 +427,8 @@ post_create_commands:
 - echo "Done" > /.status
 '
 
-T_TOOLS=$(
+# tools in fast mode done in bg - still we need that binenv path set at next login
+T_SSHD=$(
     cat <<'EOF'
 grep -q "HCLOUD_TOKEN" /etc/sshd/sshd_config || {
     echo 'AcceptEnv HCLOUD_TOKEN' >> /etc/ssh/sshd_config
@@ -433,15 +439,22 @@ grep -q "HCLOUD_TOKEN" /etc/sshd/sshd_config || {
     systemctl reload sshd || systemctl restart ssh
 }
 chmod +x hetzner-k3s
-test -e "/root/.ssh/id_ed25519" || ssh-keygen -t ecdsa -N '' -f "$HOME/.ssh/id_ed25519" >/dev/null
-which binenv || {
+type binenv 2>/dev/null || sed -i '1iexport PATH="$HOME/.binenv:$PATH"' ~/.bashrc
+test -e "/root/.ssh/id_ed25519" || ssh-keygen -q -t ecdsa -N '' -f "$HOME/.ssh/id_ed25519" >/dev/null
+touch /etc/postinstalled
+EOF
+)
+
+T_INST_TOOLS=$(
+    cat <<'EOF'
+function have_ { type "$1" >/dev/null 2>&1; }
+if ! have_ kubectl || ! have_ helm; then
     wget -q "https://github.com/devops-works/binenv/releases/download/v0.19.11/binenv_linux_amd64" -O binenv
     chmod +x binenv && ./binenv update && ./binenv install binenv && rm binenv
-    sed -i '1iexport PATH="$HOME/.binenv:$PATH"' ~/.bashrc
-}
-export PATH="$HOME/.binenv:$PATH"
-for t in helm kubectl; do which $t || binenv install "$t"; done
-touch /etc/postinstalled
+    type binenv 2>/dev/null || sed -i '1iexport PATH="$HOME/.binenv:$PATH"' ~/.bashrc
+    export PATH="$HOME/.binenv:$PATH"
+    for t in helm kubectl; do which $t || binenv install "$t"; done
+fi
 EOF
 )
 

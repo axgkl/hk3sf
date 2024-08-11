@@ -51,7 +51,7 @@ function ok {
     out "$O✔️ $m"
 }
 
-function prepare_local_dirs { mkdir -p "$CACHE_DIR" && mkdir -p "$(dirname "$FN_LOG")" && touch "$FN_LOG"; }
+function prepare_local_dirs { mkdir -p "$HOME/.kube" && mkdir -p "$CACHE_DIR" && mkdir -p "$(dirname "$FN_LOG")" && touch "$FN_LOG"; }
 function by_name {
     local r && r="$($1 | jq -r '.'"$1"'[] | select(.name == "'"$2"'")')"
     test -z "$r" && die "$2 not in $1" "Check $FN_LOG for details"
@@ -113,7 +113,7 @@ function exit_help {
     out "\n$L💡 Provide module name when calling non main functions from CLI\nExample: $(basename "$0") setup get_kubeconfig$O"
     exit
 }
-function repl { python3 -c "import sys; print(sys.stdin.read().replace('$1', '$2'))"; }
+function repl { python3 -c "import sys; print(sys.stdin.read().replace('$1', '''$2'''))"; }
 
 function get_ips {
     local s && s="$(by_name servers "$NAME-$1")"

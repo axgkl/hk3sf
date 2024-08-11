@@ -15,7 +15,7 @@ function start_ssh_tunnel {
     nohup "$0" ssh sshargs '-f -N' "$NAME-proxy" >/dev/null 2>&1 || true
     ok "ssh tunnel to $NAME-proxy established permanently" "$0 stop_ssh_tunnel to kill it"
 }
-function stop_ssh_tunnel { kill "$(pgrep -f "ssh.*$NAME-proxy")" 2>/dev/null; }
+function stop_ssh_tunnel { kill "$(pgrep -f "ssh.*$NAME-proxy")" 2>/dev/null || true; }
 
 function kubectl {
     local stream=false && test "$1" == 'stream' && shift && stream=true
@@ -80,16 +80,18 @@ function networks { api_get networks "$@"; }
 function servers { api_get servers "$@"; }
 function ssh_keys { api_get ssh_keys "$@"; }
 function volumes { api_get volumes "$@"; }
+function have { type "$1" >/dev/null 2>&1; }
 
-function check_requirements {
-    type jq >/dev/null || die "jq not installed" "Install jq" && ok "jq installed"
-    type curl >/dev/null || die "curl not installed" "Install jq" && ok "curl installed"
+function ensure_requirements {
+    have jq || die "jq not installed" "Install jq" && ok "jq installed"
+    have curl || die "curl not installed" "Install jq" && ok "curl installed"
     test -z "$HCLOUD_TOKEN" && die "Missing environment variable HCLOUD_TOKEN." "Export or add to pass. Should be created in project space of the intended cluster." || ok "HCLOUD_TOKEN is set"
-    networks >/dev/null
-
+    ensure_local_ssh_key # call, when $FN_SSH_KEY possibly not present
     test -e "$FN_SSH_KEY" && test -e "${FN_SSH_KEY}.pub" || die "SSH key not present" "Create SSH key pair in $FN_SSH_KEY or export fn_ssh_key=<location of your private key>" && ok "Have keys"
     SSH_KEY_FINGERPRINT_="$(ssh-keygen -l -E md5 -f "$FN_SSH_KEY.pub" | cut -d ':' -f 2- | cut -d ' ' -f 1)"
     test -z "$SSH_KEY_FINGERPRINT_" && die "SSH key fingerprint failed" "Check that $FN_SSH_KEY.pub is a valid SSH key" || ok "Have fingerprint"
+    local f=ensure_tools_local
+    if [ "${1:-}" == "fast" ]; then $f & else $f; fi
     ok "Requirements met"
 }
 
