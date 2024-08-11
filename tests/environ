@@ -1,5 +1,5 @@
 # github actions env
-eval "$(pass show gk/axgkl/gitopstestenv)"
+eval "$(pass show gk/axgkl/gitopstestenv)" # See github action for those key/values
 set -a
 NAME="citest"
 FN_SSH_KEY="test_ssh_key"
