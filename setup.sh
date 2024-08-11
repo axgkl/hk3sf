@@ -5,7 +5,7 @@ SSH_KEY_NAME_=""
 
 function ensure_local_ssh_key {
     local fn && fn="${FN_SSH_KEY}"
-    test -e "$fn" || run ssh-keygen -t ecdsa -N '' -f "$fn"
+    test -e "$fn" || run ssh-keygen -q -t ecdsa -N '' -f "$fn"
     run chmod 600 "$fn"
     ok "SSH key present [$fn]"
 }
