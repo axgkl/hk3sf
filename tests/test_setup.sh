@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
+test -z "${GITHUB_ACTIONS:-}" && . tests/environ # local testing
+trap 'echo "Error on line $LINENO $BASH_COMMAND"' ERR
 
-func="${1:-import}" && shift
-source "./main.sh" "$func" "$@"
-
+source "./main.sh" "$@"
+set -x
 ensure_local_ssh_key # call, when $FN_SSH_KEY possibly not present
 check_requirements
 #images
