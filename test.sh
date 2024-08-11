@@ -11,8 +11,8 @@ function test_autoscale {
     # ❗ Do NOT delete nodes via kubectl. They will remain up but not outside the cluster.
     local d="$CACHE_DIR/test_autoscale" && mkdir -p "$d"
     local m="$d/manifest.yaml"
-    test "$AUTOSCALED_COUNT" == "0" && {
-        ok "Skipping autoscale test - you have no autoscaled nodes" "Set \$AUTOSCALED_COUNT to > 0"
+    test "$HK_AUTOSCALED_COUNT" == "0" && {
+        ok "Skipping autoscale test - you have no autoscaled nodes" "Set \$HK_AUTOSCALED_COUNT to > 0"
         return 0
     }
     local replicas && replicas="$((MASTERS_COUNT + WORKERS_COUNT + AUTOSCALED_COUNT))"

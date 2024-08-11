@@ -39,7 +39,7 @@ function report {
 function cluster_servers { by_name_starts servers "$NAME-"; }
 
 function server_report {
-    local p && p='.server_type.prices[] | select(.location == "'"$LOCATION"'") | .price_monthly.gross | tonumber | round'
+    local p && p='.server_type.prices[] | select(.location == "'"$HK_LOCATION"'") | .price_monthly.gross | tonumber | round'
     local d && d='{
        name:.name, 
        dc:.datacenter.name, 
@@ -53,7 +53,7 @@ function server_report {
 }
 
 function lb_report {
-    local p && p='.load_balancer_type.prices[] | select(.location == "'"$LOCATION"'") | .price_monthly.gross | tonumber | round'
+    local p && p='.load_balancer_type.prices[] | select(.location == "'"$HK_LOCATION"'") | .price_monthly.gross | tonumber | round'
     local d && d='{
        name:.name, 
        dc:.location.name,
@@ -109,7 +109,7 @@ function destroy {
     local n id have
     shw destroy_by_type servers
     #del_by_name "$NAME" servers
-    shw destroy_by_name "$HOST_NETWORK_NAME" networks
+    shw destroy_by_name "$HK_HOST_NETWORK_NAME" networks
     shw destroy_by_name "$NAME" ssh_keys
     shw destroy_by_type load_balancers
     echo "Volumes left:"

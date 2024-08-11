@@ -36,7 +36,15 @@ function transfer_caddy_binary {
 }
 
 function proxy_is_lb { test -n "${PROXY_LB:-}"; }
+
+# 💡 Turn the proxy node into a loadbalancer replacement
 function ensure_proxy_is_loadbalancer {
+    # No need to pay for a loadbalancer when we can use the proxy node
+    # Straight forward transferral of setup to on premise k3s + existing LB
+    # Downside:
+    # 1. No HA - when it breaks you have to create a new one and configure DNS to it
+    # 2. No CCM for it - i.e. for new *external* ports you do have to recreate the config AND configure NodePort 30000+that port
+    # Note: New webservices within the cluster are typically done on 443/80 and specific hostnames, not touching the LB
     proxy_is_lb || { ok "Skipped - No proxy loadbalancer ports configured, assuming hetzner lb is used (via ingress annotations for installed hetzner ccm) " && return; }
     get_proxy_ips
     #shw destroy_by_type load_balancers
@@ -45,7 +53,7 @@ function ensure_proxy_is_loadbalancer {
     IFS=';' read -ra P <<<"$PROXY_LB"
     for p in "${P[@]}"; do
         np=$((p + 30000))
-        s=''$s',\n"port'$p'": { "listen": [":'$p'", "[::]:'$p'"], "routes": [{ "handle": [{ "handler": "proxy", "proxy_protocol": "v2", "upstreams": [{ "dial": ["10.'$HOST_NETWORK'.0.5:'$np'"] }] }] }]}'
+        s=''$s',\n"port'$p'": { "listen": [":'$p'", "[::]:'$p'"], "routes": [{ "handle": [{ "handler": "proxy", "proxy_protocol": "v2", "upstreams": [{ "dial": ["10.'$HK_HOST_NETWORK'.0.5:'$np'"] }] }] }]}'
     done
     local c && c='{"logging":{"sink":{"writer":{"output":"stdout"}},"logs":{"default":{"level":"DEBUG"}}},"apps":{"layer4":{"servers":{'${s:1}'}}}}'
     c="$(echo -e "$c" | jq .)"
@@ -57,8 +65,8 @@ function ensure_proxy_is_loadbalancer {
 
 function ensure_host_network {
     local id n nr net
-    n="$HOST_NETWORK_NAME"
-    nr="$HOST_NETWORK"
+    n="$HK_HOST_NETWORK_NAME"
+    nr="$HK_HOST_NETWORK"
     test -z "$(by_name networks "$n")" && {
         net="10.$nr.0.0"
         hapi POST networks -d "$(t_net "$n" "$net")" >/dev/null
@@ -82,9 +90,9 @@ function ensure_server {
         "name":        "'"$name"'",
         "server_type": "'"$type"'",
         "image":       "'"$img"'",
-        "location":    "'"$LOCATION"'",
+        "location":    "'"$HK_LOCATION"'",
         "ssh_keys":    ["'"$SSH_KEY_NAME_"'"],
-        "networks":    ['"$HOST_NETWORK_ID_"'],
+        "networks":    ['"$HK_HOST_NETWORK_ID_"'],
         "public_net": {
             "enable_ipv4": true,
             "enable_ipv6": true
@@ -97,7 +105,7 @@ function ensure_server {
         created=true
         local fn="$CACHE_DIR/tst"
         rm -f "$fn" && touch "$fn"
-        local port="$SSH_PORT"
+        local port="$HK_SSH_PORT"
         SSH_PORT=22 # until configured
         for __ in {1..2}; do
             for _ in {1..10}; do
@@ -159,9 +167,9 @@ function ensure_default_route_via_proxy {
     shw ensure_host_network
     local old
     function act {
-        hapi POST "networks/$HOST_NETWORK_ID_/actions/${1}_route" -d '{ "destination": "0.0.0.0/0", "gateway": "'"$2"'" }'
+        hapi POST "networks/$HK_HOST_NETWORK_ID_/actions/${1}_route" -d '{ "destination": "0.0.0.0/0", "gateway": "'"$2"'" }'
     }
-    old="$(networks | jq -r '.networks[] | select(.id == '"$HOST_NETWORK_ID_"') | .routes[] | select(.destination == "0.0.0.0/0") | .gateway')"
+    old="$(networks | jq -r '.networks[] | select(.id == '"$HK_HOST_NETWORK_ID_"') | .routes[] | select(.destination == "0.0.0.0/0") | .gateway')"
     test -z "$old" || {
         test "$old" == "$IP_PROXY_PRIV_" && { ok "Default route already set via proxy" && return 0; }
         act delete "$old"
@@ -180,10 +188,10 @@ function ensure_proxy_server {
     shw postinstall "$IP_PROXY_"
 }
 function fn_k3s_config { echo "$CACHE_DIR/hetzner-k3s-config.yaml"; }
-function synthetize_config {
+function synthetize_hk3s_config {
     local key && key="$(ssh "root@$IP_PROXY_" cat "/root/.ssh/id_ed25519.pub")"
     local lkey && lkey="$(cat "$FN_SSH_KEY".pub)"
-    local cfg && cfg="$(echo -e "$T_HK3S_CFG_POST" | repl "SSH_KEY_BAST" "$key" | repl "SSH_KEY_LOCAL" "$lkey")"
+    local cfg && cfg="$(echo -e "$T_HK3S_POST_CREATE_CMDS" | repl "SSH_KEY_BAST" "$key" | repl "SSH_KEY_LOCAL" "$lkey")"
     cfg="$T_HK3S_CFG\n$cfg"
     echo -e "$cfg" >"$(fn_k3s_config)"
     ok "Config in $(repl "$(pwd)" '.' <<<"$(fn_k3s_config)")"
@@ -193,12 +201,12 @@ function have_k3s_master { test -n "$(by_name_starts servers "$NAME-master")"; }
 function ensure_k3s_via_proxy {
     $force || { shw have_k3s_master && ok "Skipped - found $NAME-master node. (Run $0 -f install to force running 'hetzner-k3s create')" && return; }
     get_proxy_ips
-    shw synthetize_config
+    shw synthetize_hk3s_config
     ssh "root@$IP_PROXY_" tee "config.yaml" <"$(fn_k3s_config)" >/dev/null
     export HCLOUD_TOKEN
     echo
     out "$S🫰 Kicking off hetzner-k3s from proxy host$L"
-    out "${L}ssh -p $SSH_PORT -i '$FN_SSH_KEY' root@$IP_PROXY_$O"
+    out "${L}ssh -p $HK_SSH_PORT -i '$FN_SSH_KEY' root@$IP_PROXY_$O"
     proxy_is_lb && (transfer_caddy_binary 'in background') & # speeding things up for next step
     local t0 && t0=$(date +%s)
     ssh stream "root@$IP_PROXY_" ./hetzner-k3s create --config config.yaml
@@ -230,14 +238,14 @@ function ssh_config_add_master_host {
     echo "Host $NAME-m$1
     HostName $ip_priv
     User root
-    Port $SSH_PORT
+    Port $HK_SSH_PORT
     ProxyCommand ssh -W %h:%p $NAME-proxy"
 }
 function ssh_config_add_proxy_host {
     echo "Host $NAME-proxy
     HostName $IP_PROXY_
     User root
-    Port $SSH_PORT
+    Port $HK_SSH_PORT
     LocalForward $SSH_TUNNEL_PORT $ip_priv:6443"
 }
 
@@ -307,7 +315,7 @@ Description=Bastion IP Forwarder
 [Service]
 Type=oneshot
 ExecStart=/bin/bash -c 'echo 1 > /proc/sys/net/ipv4/ip_forward'
-ExecStart=/bin/bash -c 'iptables -t nat -A POSTROUTING -s "10.${HOST_NETWORK}.0.0/16" -o eth0 -j MASQUERADE'
+ExecStart=/bin/bash -c 'iptables -t nat -A POSTROUTING -s "10.${HK_HOST_NETWORK}.0.0/16" -o eth0 -j MASQUERADE'
 
 [Install]
 WantedBy=multi-user.target
@@ -317,10 +325,10 @@ T_HK3S_CFG='
 ---
 cluster_name: "'"$NAME"'"
 kubeconfig_path: "./kubeconfig"
-k3s_version: "'"$VER_K3S"'"
+k3s_version: "'"$HK_VER_K3S"'"
 networking:
   ssh:
-    port: '"$SSH_PORT"'
+    port: '"$HK_SSH_PORT"'
     use_agent: false # set to true if your key has a passphrase
     public_key_path: "~/.ssh/id_ed25519.pub"
     private_key_path: "~/.ssh/id_ed25519"
@@ -334,32 +342,32 @@ networking:
     ipv6: true
   private_network:
     enabled : true
-    subnet: 10.'$HOST_NETWORK'.0.0/16
-    existing_network_name: "'"$HOST_NETWORK_NAME"'"
+    subnet: 10.'$HK_HOST_NETWORK'.0.0/16
+    existing_network_name: "'"$HK_HOST_NETWORK_NAME"'"
   cni:
     enabled: true
     encryption: false
-    mode: '"$CNI"'
-  cluster_cidr: "'"$CIDR_CLUSTER"'"
-  service_cidr: "'"$CIDR_SERVICE"'"
-  cluster_dns: "'"$DNS_CLUSTER"'"
+    mode: '"$HK_CNI"'
+  cluster_cidr: "'"$HK_CIDR_CLUSTER"'"
+  service_cidr: "'"$HK_CIDR_SERVICE"'"
+  cluster_dns: "'"$HK_DNS_CLUSTER"'"
 datastore:
   mode: etcd # etcd (default) or external
   external_datastore_endpoint: postgres://....
-schedule_workloads_on_masters: '"$MASTERS_ARE_WORKERS"'
+schedule_workloads_on_masters: '"$HK_MASTERS_ARE_WORKERS"'
 
 masters_pool:
-  instance_type: "'"${MASTERS_TYPE}"'"
-  instance_count: '"${MASTERS_COUNT}"'
-  location: "'"${LOCATION}"'"
-  image: "'"${MASTERS_IMG}"'"
+  instance_type: "'"${HK_MASTERS_TYPE}"'"
+  instance_count: '"${HK_MASTERS_COUNT}"'
+  location: "'"${HK_LOCATION}"'"
+  image: "'"${HK_MASTERS_IMG}"'"
 
 worker_node_pools:
   - name: '"${NAME}"'-small-static
-    instance_type: "'"${WORKERS_TYPE}"'"
-    instance_count: '"${WORKERS_COUNT}"'
-    location: "'"${LOCATION}"'"
-    image: "'"${WORKERS_IMG}"'"
+    instance_type: "'"${HK_WORKERS_TYPE}"'"
+    instance_count: '"${HK_WORKERS_COUNT}"'
+    location: "'"${HK_LOCATION}"'"
+    image: "'"${HK_WORKERS_IMG}"'"
     # labels:
     #   - key: purpose
     #     value: blah
@@ -368,24 +376,23 @@ worker_node_pools:
     #     value: value1:NoSchedule
 
   - name: '"${NAME}"'-medium-autoscaled
-    instance_type: "'"${AUTOSCALED_TYPE}"'"
-    instance_count: '"${AUTOSCALED_COUNT}"'
-    location: "'"${LOCATION}"'"
-    image: "'"${AUTOSCALED_IMG}"'"
+    instance_type: "'"${HK_AUTOSCALED_TYPE}"'"
+    instance_count: '"${HK_AUTOSCALED_COUNT}"'
+    location: "'"${HK_LOCATION}"'"
+    image: "'"${HK_AUTOSCALED_IMG}"'"
     autoscaling:
       enabled: true
       min_instances: 0
-      max_instances: '"${AUTOSCALED_COUNT}"'
+      max_instances: '"${HK_AUTOSCALED_COUNT}"'
 
 embedded_registry_mirror:
-  enabled: '"${REGISTRY_MIRROR}"'
+  enabled: '"${HK_REGISTRY_MIRROR}"'
 
 additional_packages:
  - ifupdown
 api_server_hostname: '"${API_SERVER_HOSTNAME:-first_master}"'
 '
-
-T_HK3S_CFG_POST='
+T_HK3S_POST_CREATE_CMDS='
 post_create_commands:
 - echo "Started" > /.status
 - timedatectl set-timezone Europe/Berlin
@@ -393,12 +400,12 @@ post_create_commands:
 - echo '\''SSH_KEY_LOCAL'\'' >> /root/.ssh/authorized_keys
 - echo "root:$(head -c 50 /dev/urandom | base64)" | chpasswd
 - mkdir -p /etc/network/interfaces.d
-- iface="$(ip -o -4 addr list | grep " 10.'"$HOST_NETWORK"'." | cut -d " " -f 2)"
+- iface="$(ip -o -4 addr list | grep " 10.'"$HK_HOST_NETWORK"'." | cut -d " " -f 2)"
 - |
   cat > /etc/network/interfaces.d/$iface <<EOF
   auto $iface
   iface $iface inet dhcp
-    post-up ip route add default via 10.'"$HOST_NETWORK"'.0.1
+    post-up ip route add default via 10.'"$HK_HOST_NETWORK"'.0.1
     post-up ip route add 169.254.169.254 via 172.31.1.1
   EOF
 - rm -f /etc/resolv.conf
@@ -410,7 +417,7 @@ post_create_commands:
   search .
   EOF
 - ip route add 169.254.0.0/16 via 172.31.1.1
-- ip route add default via 10.'"$HOST_NETWORK"'.0.1
+- ip route add default via 10.'"$HK_HOST_NETWORK"'.0.1
 - echo "Done" > /.status
 '
 
