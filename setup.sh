@@ -90,7 +90,7 @@ function ensure_server {
         "image":       "'"$img"'",
         "location":    "'"$HK_LOCATION"'",
         "ssh_keys":    ["'"$SSH_KEY_NAME_"'"],
-        "networks":    ['"$HK_HOST_NETWORK_ID_"'],
+        "networks":    ['"$HOST_NETWORK_ID_"'],
         "public_net": {
             "enable_ipv4": true,
             "enable_ipv6": true
@@ -165,9 +165,9 @@ function ensure_default_route_via_proxy {
     shw ensure_host_network
     local old
     function act {
-        hapi POST "networks/$HK_HOST_NETWORK_ID_/actions/${1}_route" -d '{ "destination": "0.0.0.0/0", "gateway": "'"$2"'" }'
+        hapi POST "networks/$HOST_NETWORK_ID_/actions/${1}_route" -d '{ "destination": "0.0.0.0/0", "gateway": "'"$2"'" }'
     }
-    old="$(networks | jq -r '.networks[] | select(.id == '"$HK_HOST_NETWORK_ID_"') | .routes[] | select(.destination == "0.0.0.0/0") | .gateway')"
+    old="$(networks | jq -r '.networks[] | select(.id == '"$HOST_NETWORK_ID_"') | .routes[] | select(.destination == "0.0.0.0/0") | .gateway')"
     test -z "$old" || {
         test "$old" == "$IP_PROXY_PRIV_" && { ok "Default route already set via proxy" && return 0; }
         act delete "$old"

@@ -1,0 +1,8 @@
+# github actions env
+eval "$(pass show gk/axgkl/gitopstestenv)"
+NAME="citest"
+FN_SSH_KEY="ssh_key"
+HK_HOST_NETWORK=2
+LOCATION="hel1"
+
+

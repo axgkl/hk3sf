@@ -1,11 +1,5 @@
 #!/usr/bin/env bash
 
-NAME="citest"
-FN_SSH_KEY="ssh_key"
-HOST_NETWORK=2
-LOCATION="hel1"
-DNS_PROVIDER="digitalocean"
-
 source "./main.sh" import
 
 ensure_local_ssh_key # call, when $FN_SSH_KEY possibly not present

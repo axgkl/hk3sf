@@ -6,29 +6,30 @@ on: [push]
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      HCLOUD_TOKEN: ${{ secrets.HCRO }}
+      HCLOUD_TOKEN_WRITE: ${{ secrets.HCRW }}
+      DNS_API_TOKEN: ${{ secrets.DORW }}
+      DNS_PROVIDER: digitalocean
+      DOMAIN: "citest.${{ secrets.DOMAIN }}"
+      EMAIL: "${{ secrets.EMAIL }}"
+      NAME: "citest"
+      FN_SSH_KEY: "ssh_key"
+      HK_HOST_NETWORK: 2
+      LOCATION: "hel1"
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Run tests
-        env:
-          run: "${{ github.event.head_commit.message }}"
-          HCLOUD_TOKEN: ${{ secrets.HCRO }}
-          HCLOUD_TOKEN_WRITE: ${{ secrets.HCRW }}
-          DNS_API_TOKEN: ${{ secrets.DORW }}
-          DNS_PROVIDER: digitalocean
-          DOMAIN: "citest.${{ secrets.DOMAIN }}"
-          EMAIL: "${{ secrets.EMAIL }}"
-        run: |
-          if [[ "$run" == *":secrets:"* ]]; then
-            bash ./tests/test_secrets.sh
-          fi
-          if [[ "$run" == *":setup:"* ]]; then
-            bash ./tests/test_setup.sh
-          fi
-          # Add more tests as needed
+      - name: Run test_secrets.sh
+        if: contains(github.event.head_commit.message, ':secrets:')
+        run: bash ./tests/test_secrets.sh
+
+      - name: Run test_setup.sh
+        if: contains(github.event.head_commit.message, ':setup:')
+        run: bash ./tests/test_setup.sh
 
       - name: Teardown
-        if: ${{ !(contains(github.event.head_commit.message, ':keep cluster:')) }}
+        if: ${{ !(contains(github.event.head_commit.message, ':keep:')) }}
         run: bash ./tests/teardown.sh
