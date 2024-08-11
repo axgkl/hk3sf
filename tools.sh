@@ -120,6 +120,8 @@ function get_ips {
     ip_priv="$(jq -r '.private_net[0].ip' <<<"$s")"
 }
 
+function proxy_is_lb { test -n "${PROXY_LB:-}"; }
+
 function chk_have { type "$1" 2>/dev/null | grep -q function; }
 #chk || die "Not supported: $func" "$0 -h for all funcs"
 function import() {

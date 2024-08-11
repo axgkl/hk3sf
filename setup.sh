@@ -35,8 +35,6 @@ function transfer_caddy_binary {
     ok "have caddy binary on proxy"
 }
 
-function proxy_is_lb { test -n "${PROXY_LB:-}"; }
-
 # 💡 Turn the proxy node into a loadbalancer replacement
 function ensure_proxy_is_loadbalancer {
     # No need to pay for a loadbalancer when we can use the proxy node
