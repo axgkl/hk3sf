@@ -10,3 +10,5 @@ docs/deploys/hello_autoscaler
 ff
 ssh_key
 ssh_key.pub
+test_ssh_key
+test_ssh_key.pub

@@ -14,8 +14,8 @@ jobs:
       DOMAIN: "citest.${{ secrets.DOMAIN }}"
       EMAIL: "${{ secrets.EMAIL }}"
       NAME: "citest"
-      FN_SSH_KEY: "ssh_key"
-      HK_HOST_NETWORK: 2
+      FN_SSH_KEY: "test_ssh_key"
+      HK_HOST_NETWORK: 7
       LOCATION: "hel1"
 
     steps:
@@ -23,7 +23,6 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run test_secrets.sh
-        if: contains(github.event.head_commit.message, ':secrets:')
         run: bash ./tests/test_secrets.sh
 
       - name: Run test_setup.sh

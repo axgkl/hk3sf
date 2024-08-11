@@ -207,7 +207,10 @@ function ensure_k3s_via_proxy {
     out "${L}ssh -p $HK_SSH_PORT -i '$FN_SSH_KEY' root@$IP_PROXY_$O"
     proxy_is_lb && (transfer_caddy_binary 'in background') & # speeding things up for next step
     local t0 && t0=$(date +%s)
-    ssh stream "root@$IP_PROXY_" ./hetzner-k3s create --config config.yaml
+    (
+        export HCLOUD_TOKEN="$HCLOUD_TOKEN_WRITE"
+        ssh stream "root@$IP_PROXY_" ./hetzner-k3s create --config config.yaml
+    )
     ok "🎇 Got the cluster [$(dt "$t0") sec]. Cost: $(cost)"
 }
 

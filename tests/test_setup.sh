@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-source "./main.sh" import
+func="${1:-import}" && shift
+source "./main.sh" "$func" "$@"
 
 ensure_local_ssh_key # call, when $FN_SSH_KEY possibly not present
 check_requirements

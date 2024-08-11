@@ -2,8 +2,8 @@
 eval "$(pass show gk/axgkl/gitopstestenv)"
 set -a
 NAME="citest"
-FN_SSH_KEY="ssh_key"
-HK_HOST_NETWORK=2
+FN_SSH_KEY="test_ssh_key"
+HK_HOST_NETWORK=7
 LOCATION="hel1"
 set +a
 
