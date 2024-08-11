@@ -160,7 +160,7 @@ function log() {
 # CLI Arguments
 # --------------------------------------------------------------
 main() {
-    local func && func="help"
+    local func && func="import"
     prepare_local_dirs || die "Can't prepare files" "Check your \$CACHE_DIR and \$FN_LOG config"
     echo "Starttime: $(date)" >"$FN_LOG"
     while [[ -n "${1:-}" ]]; do
