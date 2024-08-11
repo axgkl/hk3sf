@@ -18,7 +18,8 @@ jobs:
           HCLOUD_TOKEN_WRITE: ${{ secrets.HCRW }}
           DNS_API_TOKEN: ${{ secrets.DORW }}
           DNS_PROVIDER: digitalocean
-          DOMAIN: "a1.${{ secrets.DOMAIN }}"
+          DOMAIN: "citest.${{ secrets.DOMAIN }}"
+          EMAIL: "${{ secrets.EMAIL }}"
         run: |
           if [[ "$run" == *":secrets:"* ]]; then
             bash ./tests/test_secrets.sh
