@@ -23,6 +23,17 @@ function ensure_ingress_caddy {
     ok "Caddy deployed" "Logs: $0 log caddy"
 }
 
+function add_namespace {
+    local h && h="$(cat "$2")"
+    echo -e "---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: $1
+$h
+" >"$2"
+}
+
 T_CADDY_VALS="
 replicaCount: 3
 ingressController:

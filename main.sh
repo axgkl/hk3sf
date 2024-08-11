@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
-builtin cd "$(dirname "$0")"
 me="${BASH_SOURCE[0]}"
+builtin cd "$(dirname "$me")"
 ME="$(basename $0)"
 source "./conf.sh"
 source "./tools.sh"
 
-trap 'kill $(jobs -p) 2>/dev/null' EXIT SIGINT
+trap '[ -n "$(jobs -p)" ] && kill $(jobs -p) 2>/dev/null' EXIT SIGINT
+
 function clear_ip_from_known_hosts { sed -i '/'"$1"'/d' "$HOME/.ssh/known_hosts"; }
 
 # will establish a tunnel to the proxy server and keep it up:
@@ -180,27 +181,16 @@ main() {
         esac
     done
     test "$func" == "help" && exit_help
-    test "$func" == "create" && {
+    test "$func" == "import" && {
         load_pkgs
-        show_config
+        #show_config
         rmcache
-        . ./setup.sh
-        return # running all in the calling script
+        . ./setup.sh # the only non pkg not always loaded
+        return       # calling script can set up w/o imports now
     }
     import "$func"
     "$func" "$@"
-    exit $?
-}
-
-function add_namespace {
-    local h && h="$(cat "$2")"
-    echo -e "---
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: $1
-$h
-" >"$2"
+    exit "$?"
 }
 
 main "$@"
