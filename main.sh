@@ -39,10 +39,8 @@ function report {
     (echo -e "Name € IP HW DC" && jq -r '. | "\(.name) \(.price) \(.ip) \(.cores)C\u00A0\(.mem)GB\u00A0\(.disk)TB \(.dc)"' <<<"$(server_report)") | column -t
     echo -e "${S}Loadbalancer$O"
     (echo "Name € IP DC" && jq -r '. | "\(.name) \(.price) \(.ip) \(.dc)"' <<<"$(lb_report)")
-    set -x
     (echo "Name € IP DC" && jq -r '. | "\(.name) \(.price) \(.ip) \(.dc)"' <<<"$(lb_report)") | column -t || true
     (echo "Name € IP DC" && jq -r '. | "\(.name) \(.price) \(.ip) \(.dc)"' <<<"$(lb_report)") | column -t
-    echo foo
 }
 
 function cluster_servers { by_name_starts servers "$NAME-"; }

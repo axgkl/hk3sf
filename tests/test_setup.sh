@@ -3,9 +3,8 @@ test -z "${GITHUB_ACTIONS:-}" && . tests/environ # local testing
 trap 'echo "Error on line $LINENO $BASH_COMMAND"' ERR
 
 source "./main.sh" "$@"
-set -x
-report
-exit 1
+report && echo done
+exit 2
 ensure_requirements
 ensure_proxy_server
 ensure_k3s_via_proxy
