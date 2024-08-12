@@ -103,12 +103,12 @@ function test_http_svc_nginx {
     local ipl && ipl="$(shw curl -4 -s ifconfig.me)"
     out "Our current external IP: $ipl"
     local t=false fnc="$CACHE_DIR/cookies.txt"
-    ok "Waiting max 60s for certification..."
     local url="https://$h/"
-    for _ in {1..30}; do sleep 2 && shw curl -s "$url" >/dev/null && break || echo -e '.'; done
+    ok "Waiting max 60s for certification of $url ..."
+    for _ in {1..30}; do sleep 2 && curl -s "$url" >/dev/null && break || echo -n '.'; done
     curl -s "$url" >/dev/null || die "SSL test failed" "Maybe run again in a while (letsecrypt rate limit)"
     ok "SSL test passed, testing proxy proto"
-    for _ in {1..30}; do sleep 1 && curl -s "$url" | grep -q "$ipl" && break || echo -e '.'; done
+    for _ in {1..30}; do sleep 1 && curl -s "$url" | grep -q "$ipl" && break || echo -n '.'; done
     curl -s "$url" | grep "$ipl" || die "Proxy protocol test failed"
     ok "Proxy Protocol test passed"
     local pod && pod="$(curl -b "$fnc" -s "$url" | grep "Pod")"
@@ -118,10 +118,10 @@ function test_http_svc_nginx {
         test "$pod"="$(curl -b "$fnc" -s "$url" | grep "Pod")" || t=false
     done
     $t || die "Session stickyness test failed" "Curling $h did not return the same pod"
-    ok "Session stickiness test passed"
-    local msg="🟩 Success. Visit https://$h"
+    ok "Session stickiness test passed, got 5 times the same pod"
+    local msg="🟩 Success. Visit https://$h 🎇"
 
-    $no_rm && ok "$msg" "Call this with rm to delete the service" && return
+    $no_rm && ok "$msg" "Note: \$keep was set -> call this with rm to delete the service" && return
     shw kubectl delete -f "$m"
     ok "$msg" "You can run this func with -k (keep) or export keep=true, and I will not destroy the server"
 }
