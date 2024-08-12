@@ -21,7 +21,6 @@ SSH_KEY_FINGERPRINT_=""
 START_TIME_=$(date +%s)
 
 SSH_="$(which ssh)"
-KBCTL="$(which kubectl)"
 
 function dt { local x="${1:-$START_TIME_}" && echo $(($(date +%s) - x)); }
 function run {

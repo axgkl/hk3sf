@@ -234,7 +234,6 @@ function ensure_k3s_via_proxy {
 }
 
 function enable_local_kubectl {
-    test -z "$KBCTL" && die "You have no local kubectl in your \$PATH"
     shw get_kubeconfig
     shw set_ssh_config
     shw "$0" k get nodes

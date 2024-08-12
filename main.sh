@@ -17,12 +17,16 @@ function start_ssh_tunnel {
 }
 function stop_ssh_tunnel { kill "$(pgrep -f "ssh.*$NAME-proxy")" 2>/dev/null || true; }
 
-function kubectl {
+function kubectl { kube kubectl "$@"; }
+function helm { kube helm "$@"; }
+function kube {
+    local b f="$1" && shift
+    b="$(type -P "$f")" || die "You have no local $f in your \$PATH"
     local stream=false && test "$1" == 'stream' && shift && stream=true
     export KUBECONFIG="$FN_KUBECONFIG"
     ss -tuln | grep -q "$SSH_TUNNEL_PORT" || shw start_ssh_tunnel
-    $stream && "$KBCTL" "$@"
-    $stream || run "$KBCTL" "$@"
+    $stream && "$b" "$@"
+    $stream || run "$b" "$@"
 }
 function cost {
     local s && s=$(server_report | jq -s '[.[] | .price] | add')
