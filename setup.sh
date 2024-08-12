@@ -4,9 +4,24 @@ HOST_NETWORK_ID_=""
 SSH_KEY_NAME_=""
 
 function ensure_local_ssh_key {
-    local fn && fn="${FN_SSH_KEY}"
-    test -e "$fn" || run ssh-keygen -q -t ecdsa -N '' -f "$fn"
+    local fn d && fn="${FN_SSH_KEY}" && d="$(dirname "$fn")"
+    test ! -e "$d" && mkdir -p "$d" && chmod 700 "$d"
+    rm -f "$fn.previous"
+    if [ -e "$fn" ]; then cp "$fn" "$fn.previous"; fi
+    if [ -n "$SSH_KEY_PRIV" ]; then
+        echo -e "$SSH_KEY_PRIV" | grep . >"$fn" && chmod 600 "$fn"
+        ssh-keygen -y -f "$fn" >"$fn.pub"
+    else
+        run ssh-keygen -q -t ecdsa -N '' -f "$fn"
+    fi
     run chmod 600 "$fn"
+    if [ -e "$fn.previous" ]; then
+        if cmp -s "$fn" "$fn.previous"; then
+            out "🔑 SSH key unchanged"
+        else
+            out "🔑 SSH key changed - previous one in $fn.previous"
+        fi
+    fi
     ok "SSH key present [$fn]"
 }
 
@@ -17,11 +32,12 @@ function ensure_ssh_key {
     local n && n="$(n_)"
     if [ -z "$n" ]; then
         n="$NAME"
+        out "fingerprint of key '$n' does not match ours - recreating"
         function id_ { jq -r '.ssh_keys[] | select(.name == "'"$n"'") | .id' <<<"$keys"; }
         test -z "$(id_)" || hapi DELETE "ssh_keys/$(id_)"
         local k && k="$(cat "$FN_SSH_KEY.pub")"
         hapi POST ssh_keys -d '{ "name": "'"$n"'", "public_key": "'"$k"'" }' >/dev/null
-        ok "Created ssh key [$n] on hetzner"
+        ok "Created ssh key '$n' on hetzner"
     fi
     ok "SSH key known to Hetzner ($n)"
     SSH_KEY_NAME_="$n"

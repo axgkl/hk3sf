@@ -99,19 +99,22 @@ function test_http_svc_nginx {
         --sticky-sessions
     echo -e "$retval_" >"$m"
     shw kubectl apply -f "$m"
-    local ipl && ipl="$(shw curl -s ifconfig.me)"
+    local ipl && ipl="$(shw curl -4 -s ifconfig.me)"
     out "Our current external IP: $ipl"
     local t=false fnc="$CACHE_DIR/cookies.txt"
-    for _ in {1..5}; do
-        sleep 1 && shw curl --cookie-jar "$fnc" -s "https://$h/" | grep "$ipl" && t=true && break
-    done
-    $t || die "SSL and Proxy Protocol test failed" "Curling $h did not return our IP"
-    ok "SSL and Proxy Protocol test passed"
-    local pod && pod="$(curl -b "$fnc" -s "https://$h/" | grep "Pod")"
+    ok "Waiting max 60s for certification..."
+    local url="https://$h/"
+    for _ in {1..30}; do sleep 2 && shw curl -s "$url" >/dev/null && break || echo -e '.'; done
+    curl -s "$url" >/dev/null || die "SSL test failed" "Maybe run again in a while (letsecrypt rate limit)"
+    ok "SSL test passed, testing proxy proto"
+    for _ in {1..30}; do sleep 1 && curl -s "$url" | grep -q "$ipl" && break || echo -e '.'; done
+    curl -s "$url" | grep "$ipl" || die "Proxy protocol test failed"
+    ok "Proxy Protocol test passed"
+    local pod && pod="$(curl -b "$fnc" -s "$url" | grep "Pod")"
     out "Testing session stickyness... \n$L  Pod:$pod\n  Cookie file: $fnc$O"
     t=true
     for _ in {1..5}; do
-        test "$pod"="$(curl -b "$fnc" -s "https://$h/" | grep "Pod")" || t=false
+        test "$pod"="$(curl -b "$fnc" -s "$url" | grep "Pod")" || t=false
     done
     $t || die "Session stickyness test failed" "Curling $h did not return the same pod"
     ok "Session stickiness test passed"

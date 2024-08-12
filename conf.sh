@@ -9,7 +9,7 @@ DFLT_TYPE="${SERVER:-cx22}"
 : "${PROXY_TYPE:=$DFLT_TYPE}"
 # Ports the external LB will listen on. After changes: ensure_proxy_is_loadbalancer and ensure_ingress_nginx_with_certmgr
 : "${PROXY_LB:=80;443}"
-: "${CACHE_DIR:=$(pwd)/tmp}"
+: "${CACHE_DIR:=$(pwd)/tmp.$NAME}"
 # how long hcloud api GET results are remembered, w/o triggering now api calls. Non GET ops autoclear the cache.
 : "${CACHE_SECS:=60}"
 : "${HK_CIDR_CLUSTER:=10.50.0.0/16}"
@@ -24,8 +24,8 @@ DFLT_TYPE="${SERVER:-cx22}"
 : "${DOMAIN:=example.com}"
 : "${FN_KUBECONFIG:=$HOME/.kube/$NAME.yml}"
 : "${FN_LINK_KUBECONFIG:=$HOME/.kubeconfig}"
-: "${FN_LOG:=$(pwd)/tmp/install.log}"
-: "${FN_SSH_KEY:=$HOME/.ssh/id_rsa}"
+: "${FN_LOG:=$CACHE_DIR/install.log}"
+: "${FN_SSH_KEY:=$HOME/.ssh/id-$NAME}"
 # Read only token - in use for most functions:
 : "${HCLOUD_TOKEN:=}"
 : "${HCLOUD_TOKEN_WRITE:=}"
@@ -40,6 +40,8 @@ DFLT_TYPE="${SERVER:-cx22}"
 : "${HK_REGISTRY_MIRROR:=true}"
 : "${HK_SSH_PORT:=22}"
 : "${SSH_TUNNEL_PORT:=16443}"
+# Optional - otherwise created
+: "${SSH_KEY_PRIV:=}"
 # Until v2 is released, this contains a few patches:
 : "${URL_HETZNER_K3S:=https://github.com/axgkl/binaries/raw/master/hetzner-k3s}"
 # xcaddy with lb4 module added - in use when proxy is lb:

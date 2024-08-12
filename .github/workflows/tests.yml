@@ -7,14 +7,14 @@ jobs:
   test:
     runs-on: ubuntu-latest
     env:
+      NAME: "citest"
       HCLOUD_TOKEN: ${{ secrets.HCRO }}
       HCLOUD_TOKEN_WRITE: ${{ secrets.HCRW }}
       DNS_API_TOKEN: ${{ secrets.DORW }}
       DNS_PROVIDER: digitalocean
       DOMAIN: "citest.${{ secrets.DOMAIN }}"
       EMAIL: "${{ secrets.EMAIL }}"
-      NAME: "citest"
-      FN_SSH_KEY: "test_ssh_key"
+      SSH_KEY_PRIV: "${{ secrets.SSHKEY }}"
       HK_HOST_NETWORK: 7
       LOCATION: "hel1"
 

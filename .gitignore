@@ -1,14 +1,10 @@
 kubeconfig
 redis
 traefik
-mm
 inst
 nginx_ingress
-tmp
+tmp*
 deploys/nginx
 docs/deploys/hello_autoscaler
-ff
-ssh_key
-ssh_key.pub
-test_ssh_key
-test_ssh_key.pub
+ssh_key*
+test_ssh_key*

@@ -6,6 +6,7 @@ function digitalocean_dns_add {
         ok "Already set" "$host -> $ip"
         return 0
     }
+    digitalocean_dns_rm_by_name "$host"
     curl_ POST "$token" "https://api.digitalocean.com/v2/domains/$domain/records" \
         -d "{\"type\":\"A\",\"name\":\"$host\",\"data\":\"$ip\",\"ttl\":$DNS_TTL}"
     ok "DNS configured" "$host.$domain -> $ip"
@@ -14,7 +15,7 @@ function digitalocean_dns_add {
 function digitalocean_dns_list {
     local domain="${DOMAIN#*.}"
     local u="https://api.digitalocean.com/v2/domains/$domain/records"
-    curl_ GET "$DNS_API_TOKEN" "$u" | jq '.domain_records[] | {id, name, data}'
+    curl_ GET "$DNS_API_TOKEN" "$u" | jq '.domain_records[] | {id, name, data, ttl}'
 }
 
 # 💡 List DO DNS entries by name

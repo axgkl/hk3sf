@@ -86,7 +86,7 @@ function ensure_requirements {
     have jq || die "jq not installed" "Install jq" && ok "jq installed"
     have curl || die "curl not installed" "Install jq" && ok "curl installed"
     test -z "$HCLOUD_TOKEN" && die "Missing environment variable HCLOUD_TOKEN." "Export or add to pass. Should be created in project space of the intended cluster." || ok "HCLOUD_TOKEN is set"
-    ensure_local_ssh_key # call, when $FN_SSH_KEY possibly not present
+    shw ensure_local_ssh_key # call, when $FN_SSH_KEY possibly not present
     test -e "$FN_SSH_KEY" && test -e "${FN_SSH_KEY}.pub" || die "SSH key not present" "Create SSH key pair in $FN_SSH_KEY or export fn_ssh_key=<location of your private key>" && ok "Have keys"
     SSH_KEY_FINGERPRINT_="$(ssh-keygen -l -E md5 -f "$FN_SSH_KEY.pub" | cut -d ':' -f 2- | cut -d ' ' -f 1)"
     test -z "$SSH_KEY_FINGERPRINT_" && die "SSH key fingerprint failed" "Check that $FN_SSH_KEY.pub is a valid SSH key" || ok "Have fingerprint"
