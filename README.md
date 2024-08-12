@@ -1,9 +1,13 @@
 # Hetzner K3s Functions
-> A collection of functions to setup K3s clusters on Hetzner Cloud, based on vitobotta's [hetzner-k3s](https://github.com/vitobotta/hetzner-k3s).
+> A collection of functions to setup K3s clusters on [Hetzner Cloud][hcloud], based on vitobotta's [hetzner-k3s][hk3s]
 
 [![Tests](https://github.com/axgkl/hk3sf/actions/workflows/tests.yml/badge.svg)](https://github.com/axgkl/hk3sf/actions/workflows/tests.yml)
 
 ## About
+
+[Hetzner-k3s][hk3s] is nicely engineered general k3s installation tool on Hetzner, with a large degree of declarative possibilities for customization.
+
+This repo here provides a set of bash functions, for 
 
 https://youtu.be/EvzB_Q1gSds?t=54
 
@@ -71,4 +75,5 @@ Host: 192.168.0.11
 
 SO_REUSEPORT in strace nc -l -p 80
 
-
+[hk3s]: https://github.com/vitobotta/hetzner-k3s
+[hcloud]: https://docs.hetzner.cloud/

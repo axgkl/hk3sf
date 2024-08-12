@@ -105,7 +105,8 @@ function test_http_svc_nginx {
     local t=false fnc="$CACHE_DIR/cookies.txt"
     local url="https://$h/"
     ok "Waiting max 60s for certification of $url ..."
-    for _ in {1..30}; do sleep 2 && curl -s "$url" >/dev/null && break || echo -n '.'; done
+    #for _ in {1..30}; do sleep 2 && curl -s "$url" >/dev/null && break || echo -n '.'; done
+    for _ in {1..30}; do sleep 2 && curl "$url" && break || echo -n '.'; done
     curl -s "$url" >/dev/null || die "SSL test failed" "Maybe run again in a while (letsecrypt rate limit)"
     ok "SSL test passed, testing proxy proto"
     for _ in {1..30}; do sleep 1 && curl -s "$url" | grep -q "$ipl" && break || echo -n '.'; done

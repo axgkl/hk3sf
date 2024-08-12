@@ -147,7 +147,7 @@ function pods() { kubectl get pods --all-namespaces; }
 
 function log() {
     local flow=false match=''
-    local m="$1" && shift
+    local m="${1:?Require match string}" && shift
     while [[ -n "${1:-}" ]]; do
         case "$1" in
         -f) flow=true && shift ;;
