@@ -17,6 +17,8 @@ jobs:
       SSH_KEY_PRIV: "${{ secrets.SSHKEY }}"
       HK_HOST_NETWORK: 7
       LOCATION: "hel1"
+      LANG: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
 
     steps:
       - name: Checkout code

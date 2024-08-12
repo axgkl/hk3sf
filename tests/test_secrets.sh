@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 set -euo pipefail
-env
-exit 1
 test -z "${GITHUB_ACTIONS:-}" && . tests/environ # local testing
 trap 'echo "Error on line $LINENO $BASH_COMMAND"' ERR
 
