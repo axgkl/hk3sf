@@ -61,7 +61,7 @@ function ensure_proxy_is_loadbalancer {
     # Note: New webservices within the cluster are typically done on 443/80 and specific hostnames, not touching the LB
     proxy_is_lb || { ok "Skipped - No proxy loadbalancer ports configured, assuming hetzner lb is used (via ingress annotations for installed hetzner ccm) " && return; }
     get_proxy_ips
-    #shw destroy_by_type load_balancers
+    shw destroy_by_type load_balancers
     shw transfer_caddy_binary
     local np s=''
     IFS=';' read -ra P <<<"$PROXY_LB"
