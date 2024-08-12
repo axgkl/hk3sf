@@ -6,7 +6,7 @@ ME="$(basename $0)"
 source "./conf.sh"
 source "./tools.sh"
 
-trap 'echo trap && echo $$ & jobs -p && [ -n "$(jobs -p)" ] && { kill $(jobs -p) || true; }' EXIT SIGINT
+trap 'test -z "$tailpid" || kill $tailpid' EXIT SIGINT
 
 function clear_ip_from_known_hosts { local fn="$HOME/.ssh/known_hosts" && mkdir -p "$HOME/.ssh" && touch "$fn" && sed -i '/'"$1"'/d' "$fn"; }
 
@@ -177,6 +177,7 @@ main() {
         -x | --trace) set -x && shift ;;
         -d | --debug)
             tail -f "$FN_LOG" | awk '{ printf "\033['"$LOG_DBG_CLR"'m%s\033[0m\n", $0 }' >&2 &
+            tailpid=$!
             shift
             ;;
         -*) die "Unknown option: $1" "-h for help" ;;

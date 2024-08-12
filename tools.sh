@@ -11,7 +11,7 @@ declare -A icons=(
     ["volumes"]='💾 '
 )
 
-created=false && img="" && type="" && ip="" && ip_priv=""
+created=false && img="" && type="" && ip="" && ip_priv="" && tailpid=""
 force=false
 retval_=""
 no_die=false
