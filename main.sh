@@ -6,7 +6,7 @@ ME="$(basename $0)"
 source "./conf.sh"
 source "./tools.sh"
 
-trap '[ -n "$(jobs -p)" ] && kill $(jobs -p) 2>/dev/null' EXIT SIGINT
+trap 'echo trap && [ -n "$(jobs -p)" ] && kill $(jobs -p) 2>/dev/null || true' EXIT SIGINT
 
 function clear_ip_from_known_hosts { local fn="$HOME/.ssh/known_hosts" && mkdir -p "$HOME/.ssh" && touch "$fn" && sed -i '/'"$1"'/d' "$fn"; }
 
