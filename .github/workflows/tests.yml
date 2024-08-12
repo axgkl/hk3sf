@@ -20,6 +20,7 @@ jobs:
       LANG: en_US.UTF-8
       LC_ALL: en_US.UTF-8
       act: ${{ github.event.head_commit.message }}
+      keep: ${{ contains(github.event.head_commit.message, ':keep:') }}
 
     steps:
       - name: Checkout code
@@ -41,5 +42,5 @@ jobs:
         run: bash ./tests/test_setup.sh test_http_svc_nginx
 
       - name: Teardown
-        if: ${{ always() && !(contains(env.act, ':keep:')) }}
+        if: ${{ always() && !env.keep }}
         run: bash ./tests/teardown.sh

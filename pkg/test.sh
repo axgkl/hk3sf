@@ -11,7 +11,7 @@ function test_autoscale {
     # ❗ Do NOT delete nodes via kubectl. They will remain up but not outside the cluster.
     local d="$CACHE_DIR/test_autoscale" && mkdir -p "$d"
     local m="$d/manifest.yaml"
-    test "$HK_AUTOSCALED_COUNT" = "0" && {
+    test "$HK_AUTOSCALED_COUNT" == "0" && {
         ok "Skipping autoscale test - you have no autoscaled nodes" "Set \$HK_AUTOSCALED_COUNT to > 0"
         return 0
     }
@@ -24,7 +24,7 @@ function test_autoscale {
     while true; do
         n="$(kubectl get nodes && kubectl get pods -n default -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.status.phase}{"\n"}{end}' | grep autoscaled-hello)"
         test "$shwn" != "$n" && out "$n" && shwn="$n"
-        test "$(grep -c "Running" <<<"$n")" = "$replicas" && break
+        test "$(grep -c "Running" <<<"$n")" == "$replicas" && break
         sleep 2
     done
     report
@@ -73,11 +73,12 @@ function test_http_svc_nginx {
     # Session Stickyness
     # -k: Keep, do not delete after success
     # rm: Delete the service
-    local keep=false && test "${1:-}" = "-k" && keep=true
+    local no_rm=false && test "${1:-}" == "-k" && no_rm=true
+    test "${keep:-}" == "true" && no_rm=true
     get_proxy_ips
     local d="$CACHE_DIR/test_ssl_and_proxy_protocol_nginx" && mkdir -p "$d"
     local m="$d/manifest.yaml"
-    test "${1:-}" = "rm" && {
+    test "${1:-}" == "rm" && {
         shw kubectl delete -f "$m"
         ok "Deleted test service"
         return
@@ -120,9 +121,9 @@ function test_http_svc_nginx {
     ok "Session stickiness test passed"
     local msg="🟩 Success. Visit https://$h"
 
-    $keep && ok "$msg" "Call this with rm to delete the service" && return
+    $no_rm && ok "$msg" "Call this with rm to delete the service" && return
     shw kubectl delete -f "$m"
-    ok "$msg" "You can run this func with -k (keep) and I will not destroy the server, for you to test with a browser"
+    ok "$msg" "You can run this func with -k (keep) or export keep=true, and I will not destroy the server"
 }
 
 false && . ./tools.sh && . ./pkg/svc.sh || true
