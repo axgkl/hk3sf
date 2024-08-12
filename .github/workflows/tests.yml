@@ -19,22 +19,27 @@ jobs:
       LOCATION: "hel1"
       LANG: en_US.UTF-8
       LC_ALL: en_US.UTF-8
+      act: ${{ github.event.head_commit.message }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Teardown
+        if: contains(env.act, ':rm:')
+        run: bash ./tests/teardown.sh
+
       - name: Test base (secrets, syntax)
         run: bash ./tests/test_secrets.sh
 
       - name: Cluster setup
-        if: contains(github.event.head_commit.message, ':setup:')
+        if: contains(env.act, ':setup:')
         run: bash ./tests/test_setup.sh
 
       - name: Full HTTP Svc Test
-        if: contains(github.event.head_commit.message, ':setup:')
+        if: contains(env.act, ':setup:')
         run: bash ./tests/test_setup.sh test_http_svc_nginx
 
       - name: Teardown
-        if: ${{ always() && !(contains(github.event.head_commit.message, ':keep:')) }}
+        if: ${{ always() && !(contains(env.act, ':keep:')) }}
         run: bash ./tests/teardown.sh
