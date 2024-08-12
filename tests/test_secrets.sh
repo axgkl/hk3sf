@@ -10,3 +10,7 @@ test "$(servers)" == "$(. ./main.sh servers)"
 digitalocean_dns_list | jq .id
 
 echo success
+
+report
+echo foo
+exit 1

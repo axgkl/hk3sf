@@ -1,10 +1,13 @@
 # github actions env
 eval "$(pass show gk/axgkl/gitopstestenv)" # See github action for those key/values
+
 set -a
 NAME="citest"
 DNS_TTL=60
 DNS_PROVIDER=digitalocean
 HK_HOST_NETWORK=7
 LOCATION="hel1"
+LANG=en_US.UTF-8
+LC_ALL=en_US.UTF-8
 set +a
 
