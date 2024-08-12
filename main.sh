@@ -90,8 +90,7 @@ function ensure_requirements {
     test -e "$FN_SSH_KEY" && test -e "${FN_SSH_KEY}.pub" || die "SSH key not present" "Create SSH key pair in $FN_SSH_KEY or export fn_ssh_key=<location of your private key>" && ok "Have keys"
     SSH_KEY_FINGERPRINT_="$(ssh-keygen -l -E md5 -f "$FN_SSH_KEY.pub" | cut -d ':' -f 2- | cut -d ' ' -f 1)"
     test -z "$SSH_KEY_FINGERPRINT_" && die "SSH key fingerprint failed" "Check that $FN_SSH_KEY.pub is a valid SSH key" || ok "Have fingerprint"
-    local f=ensure_tools_local
-    if [ "${1:-}" == "fast" ]; then $f & else $f; fi
+    ensure_tools_local &
     ok "Requirements met"
 }
 

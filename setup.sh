@@ -146,22 +146,20 @@ function ensure_ip_forwarder {
 }
 
 function download_hetzner_k3s { run ssh "$1" wget -q -N "$2" -O hetzner-k3s >/dev/null; }
-function ensure_sshd_cfg_proxy { echo -e "$T_SSHD" | ssh "$1" bash -; }
+function ensure_base_cfg_proxy { echo -e "$T_SSHD" | ssh "$1" bash -; }
 function ensure_tools_proxy { echo -e "$T_INST_TOOLS" | ssh "$1" bash -; }
 function ensure_tools_local { eval "$T_INST_TOOLS"; }
 
 # 💡 Installs tools on a new server (hk3s, binenv, kubectl, helm)
 function postinstall {
     # Args: ip of server, normally $IP_PROXY_
-    local fast=false && test "${1:-}" == "fast" && fast=true && shift
     get_proxy_ips
     local ip="${1:-$IP_PROXY_}"
     have="$(ssh "root@$ip" ls /etc)"
     $force || { grep -q "postinstalled" <<<"$have" && { ok "server is postinstalled" && return; }; }
     shw download_hetzner_k3s "root@$ip" "$URL_HETZNER_K3S"
-    shw ensure_sshd_cfg_proxy "root@$ip"
-    local f=ensure_tools_proxy
-    if $fast; then shw $f "root@$ip" & else shw $f "root@$ip"; fi
+    shw ensure_base_cfg_proxy "root@$ip"
+    shw ensure_tools_proxy "root@$ip" &
     #     apt -y -qq update # post install...
     #     for p in fail2ban unattended-upgrades update-notifier-common; do apt -y -qq install "$p" systemctl enable "$p" systemctl start "$p" done
 }

@@ -2,6 +2,7 @@
 eval "$(pass show gk/axgkl/gitopstestenv)" # See github action for those key/values
 set -a
 NAME="citest"
+DNS_TTL=60
 FN_SSH_KEY="test_ssh_key"
 HK_HOST_NETWORK=7
 LOCATION="hel1"

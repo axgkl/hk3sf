@@ -51,7 +51,10 @@ function ok {
     out "$O✔️ $m"
 }
 
-function prepare_local_dirs { mkdir -p "$HOME/.kube" && mkdir -p "$CACHE_DIR" && mkdir -p "$(dirname "$FN_LOG")" && touch "$FN_LOG"; }
+function prepare_local_dirs {
+    for d in "$HOME/.ssh" "$HOME/.kube" "$CACHE_DIR" "$(dirname "$FN_LOG")"; do mkdir -p "$d"; done
+    touch "$HOME/.ssh/config" && touch "$FN_LOG"
+}
 function by_name {
     local r && r="$($1 | jq -r '.'"$1"'[] | select(.name == "'"$2"'")')"
     test -z "$r" && die "$2 not in $1" "Check $FN_LOG for details"

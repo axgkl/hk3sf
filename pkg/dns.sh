@@ -7,7 +7,7 @@ function digitalocean_dns_add {
         return 0
     }
     curl_ POST "$token" "https://api.digitalocean.com/v2/domains/$domain/records" \
-        -d "{\"type\":\"A\",\"name\":\"$host\",\"data\":\"$ip\",\"ttl\":1800}"
+        -d "{\"type\":\"A\",\"name\":\"$host\",\"data\":\"$ip\",\"ttl\":$DNS_TTL}"
     ok "DNS configured" "$host.$domain -> $ip"
 }
 
