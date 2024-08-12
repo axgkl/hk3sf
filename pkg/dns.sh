@@ -2,7 +2,7 @@ function digitalocean_dns_add {
     local host="$1" ip="$2" domain="$3" token="${DNS_API_TOKEN:-}"
     test -z "$token" && die "No \$DNS_API_TOKEN"
     local h && h="$(digitalocean_dns_by_name "$host" | jq -r .data)"
-    test -n "$h" && test "$h" == "$ip" && {
+    test -n "$h" && test "$h" = "$ip" && {
         ok "Already set" "$host -> $ip"
         return 0
     }

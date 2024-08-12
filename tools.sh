@@ -72,24 +72,24 @@ function hapi {
     local v="$1" pth="$2" && shift 2
     local ico && ico="$(ico "$(cut -d '/' -f 1 <<<"$pth")")"
     local cached && cached="$CACHE_DIR/$(echo "$pth" | tr '/' '_').json"
-    test "$v" == "GET" && newer "$cached" "$CACHE_SECS" && cat "$cached" && return
-    test "$v" == "DELETE" && out "❌$L󰛌 $ico $v $pth" && cached="$(dirname "$cached").json"
-    test "$v" == "POST" && out "$L󰙴 $ico $v $pth"
+    test "$v" = "GET" && newer "$cached" "$CACHE_SECS" && cat "$cached" && return
+    test "$v" = "DELETE" && out "❌$L󰛌 $ico $v $pth" && cached="$(dirname "$cached").json"
+    test "$v" = "POST" && out "$L󰙴 $ico $v $pth"
     local t="$HCLOUD_TOKEN"
     test "$v" != "GET" && t="$HCLOUD_TOKEN_WRITE"
     test -z "$t" && die "No hcloud token for $v $pth"
     local ret && ret="$(curl_ "$v" "$t" "https://api.hetzner.cloud/v1/$pth" "$@")"
     grep -v null <<<"$ret" | grep -q 'error' && die "Hetzner API error ${v}ing $pth" "$ret"
-    test "$v" == "GET" && {
+    test "$v" = "GET" && {
         test -z "$ret" && die "Hetzner API error ${v}ing $pth" "$ret"
         echo -e "$ret" >"$cached"
     }
-    test "$v" == "GET" || rm -f "$cached"
+    test "$v" = "GET" || rm -f "$cached"
     echo -e "$ret"
 }
 function ssh {
-    local stream=false && test "$1" == 'stream' && shift && stream=true
-    local sa='' && test "$1" == 'sshargs' && sa="$2" && shift 2
+    local stream=false && test "$1" = 'stream' && shift && stream=true
+    local sa='' && test "$1" = 'sshargs' && sa="$2" && shift 2
     local host="$1" && shift
     local o1=StrictHostKeyChecking=accept-new
     export HCLOUD_TOKEN #="$HCLOUD_TOKEN_WRITE"

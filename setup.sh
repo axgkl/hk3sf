@@ -140,7 +140,7 @@ function ensure_server {
     ip_priv=''
     while true; do
         get_ips "$shortname"
-        test "$ip_priv" == "null" && ip_priv=''
+        test "$ip_priv" = "null" && ip_priv=''
         test -z "$ip_priv" || break
         out "waiting for private IP..."
         sleep 2
@@ -188,7 +188,7 @@ function ensure_default_route_via_proxy {
     }
     old="$(networks | jq -r '.networks[] | select(.id == '"$HOST_NETWORK_ID_"') | .routes[] | select(.destination == "0.0.0.0/0") | .gateway')"
     test -z "$old" || {
-        test "$old" == "$IP_PROXY_PRIV_" && { ok "Default route already set via proxy" && return 0; }
+        test "$old" = "$IP_PROXY_PRIV_" && { ok "Default route already set via proxy" && return 0; }
         act delete "$old"
     }
     act add "$IP_PROXY_PRIV_" >/dev/null

@@ -22,7 +22,7 @@ function helm { kube helm "$@"; }
 function kube {
     local b f="$1" && shift
     b="$(type -P "$f")" || die "You have no local $f in your \$PATH"
-    local stream=false && test "$1" == 'stream' && shift && stream=true
+    local stream=false && test "$1" = 'stream' && shift && stream=true
     export KUBECONFIG="$FN_KUBECONFIG"
     ss -tuln | grep -q "$SSH_TUNNEL_PORT" || shw start_ssh_tunnel
     $stream && "$b" "$@"
@@ -188,8 +188,8 @@ main() {
         *) func="$1" && shift && break ;;
         esac
     done
-    test "$func" == "help" && exit_help
-    test "$func" == "import" && {
+    test "$func" = "help" && exit_help
+    test "$func" = "import" && {
         load_pkgs
         #show_config
         rmcache

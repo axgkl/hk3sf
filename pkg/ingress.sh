@@ -7,7 +7,7 @@ function ensure_ingress_caddy {
     # rm: Delete ingress and cert-manager
     local d="./deploys/caddy" && mkdir -p "$d"
     local m="$d/manifest.yaml"
-    test "${1:-}" == "rm" && {
+    test "${1:-}" = "rm" && {
         shw kubectl delete -f "$m"
         return
     }
@@ -50,7 +50,7 @@ function ensure_ingress_nginx_with_certmgr {
     # rm: Delete ingress and cert-manager
     local l d="./deploys/nginx" && mkdir -p "$d"
     local m="$d/manifest.yaml"
-    test "${1:-}" == "rm" && {
+    test "${1:-}" = "rm" && {
         l="$(shw helm list -A)"
         grep -q ingress-nginx <<<"$l" && shw helm delete ingress-nginx -n ingress-nginx
         grep -q cert-manager <<<"$l" && shw helm delete cert-manager -n cert-manager
