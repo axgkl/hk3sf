@@ -120,7 +120,6 @@ function test_http_svc_nginx {
     $t || die "Session stickyness test failed" "Curling $h did not return the same pod"
     ok "Session stickiness test passed, got 5 times the same pod"
     local msg="🟩 Success. Visit https://$h 🎇"
-
     $no_rm && ok "$msg" "Note: \$keep was set -> call this with rm to delete the service" && return
     shw kubectl delete -f "$m"
     ok "$msg" "You can run this func with -k (keep) or export keep=true, and I will not destroy the server"
