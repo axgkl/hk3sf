@@ -8,10 +8,5 @@ ensure_proxy_server
 ensure_k3s_via_proxy
 ensure_proxy_is_loadbalancer
 enable_local_kubectl
-
 ensure_ingress_nginx_with_certmgr
-test_http_svc_nginx
-
-# test_autoscale
 report
-#

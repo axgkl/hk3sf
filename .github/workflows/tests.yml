@@ -22,12 +22,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Run test_secrets.sh
+      - name: Test base (secrets, syntax)
         run: bash ./tests/test_secrets.sh
 
-      - name: Run test_setup.sh
+      - name: Cluster setup
         if: contains(github.event.head_commit.message, ':setup:')
         run: bash ./tests/test_setup.sh
+
+      - name: Full HTTP Svc Test
+        if: contains(github.event.head_commit.message, ':setup:')
+        run: bash ./tests/test_setup.sh test_http_svc_nginx
 
       - name: Teardown
         if: ${{ always() && !(contains(github.event.head_commit.message, ':keep:')) }}
