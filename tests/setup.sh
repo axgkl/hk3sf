@@ -10,5 +10,6 @@ ensure_k3s_via_proxy
 ensure_proxy_is_loadbalancer
 enable_local_kubectl
 ensure_ingress_nginx
+ensure_cert_manager
 report
 false && . ../setup.sh && . ../main.sh && . ../pkg/ingress.sh || true
