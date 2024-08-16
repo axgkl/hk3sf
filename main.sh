@@ -127,14 +127,13 @@ function destroy {
 }
 
 function show_config {
-    local n="$HCLOUD_TOKEN"
-    HCLOUD_TOKEN="${n:0:3}..."
+    out "\n⚙️ Config:"
     local c && c="$(
-        for key in $(grep '^:' <conf.sh | cut -d '{' -f 2 | cut -d ':' -f 1); do
-            echo "$key=${!key}"
+        for key in $(grep '^:' <conf.sh | grep -iE ''${1:-}'' | cut -d '{' -f 2 | cut -d ':' -f 1); do
+            if [[ $key =~ (TOKEN|KEY) && ! $key =~ FN_ ]]; then echo "$key=${!key:0:3}..."; else echo "$key=${!key}"; fi
         done
+
     )"
-    HCLOUD_TOKEN="$n"
     shw_code bash "$c"
 }
 
@@ -172,7 +171,7 @@ main() {
     echo "Starttime: $(date)" >"$FN_LOG"
     while [[ -n "${1:-}" ]]; do
         case "$1" in
-        -h | --help | help | \?) exit_help ;;
+        -h | --help | help | \?) shift && exit_help "$@" ;;
         -f | --force) force=true && shift ;;
         -x | --trace) set -x && shift ;;
         -d | --debug)
@@ -188,7 +187,7 @@ main() {
         *) func="$1" && shift && break ;;
         esac
     done
-    test "$func" = "help" && exit_help
+    test "$func" = "help" && exit_help "$@"
     test "$func" = "import" && {
         load_pkgs
         #show_config

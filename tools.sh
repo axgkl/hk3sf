@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2034 # Unused vars
 # Always loaded
 
 here="$(cd "$(dirname "$me")" && pwd)"
@@ -11,16 +12,21 @@ declare -A icons=(
     ["volumes"]='💾 '
 )
 
-created=false && img="" && type="" && ip="" && ip_priv="" && tailpid=""
+created=false
 force=false
-retval_=""
+img=""
+ip=""
+ip_priv=""
 no_die=false
+retval_=""
+tailpid=""
+type=""
+
 IP_PROXY_=""
 IP_PROXY_PRIV_=""
+SSH_="$(which ssh)"
 SSH_KEY_FINGERPRINT_=""
 START_TIME_=$(date +%s)
-
-SSH_="$(which ssh)"
 
 function dt { local x="${1:-$START_TIME_}" && echo $(($(date +%s) - x)); }
 function run {
@@ -101,18 +107,17 @@ function ssh {
 }
 
 function show_funcs {
-    out "$S\n󰊕 Module $1:$O"
-    grep -E '^function [a-z_]+ {' <"$1.sh" | sed -e 's/function //' | cut -d '{' -f 1 | sort
+    local m="" && test -z "$2" || m="[$2]"
+    out "$S\n󰊕 Module $1 $m:$O"
+    grep -E '^function [a-z_]+ {' <"$1.sh" | grep -iE "${2:-}" | sed -e 's/function //' | cut -d '{' -f 1 | sort || true
 }
 function exit_help {
     out "${S}Installs NATed k3s on Hetzner Cloud, using vitobotta/hetzner-k3s$O"
-    out "\n⚙️ Config:"
-    show_config
-    show_funcs main | sort
-    show_funcs setup | sort
-    show_funcs test | sort
-    for k in "pkg"/*.sh; do show_funcs "${k//.sh/}" | sort; done
-    out "\n$L💡 Provide module name when calling non main functions from CLI\nExample: $(basename "$0") setup get_kubeconfig$O"
+    show_config "$@"
+    show_funcs main "$@" | sort
+    show_funcs setup "$@" | sort
+    for k in "pkg"/*.sh; do show_funcs "${k//.sh/}" "$@" | sort; done
+    #out "\n$L💡 Provide module name when calling non main functions from CLI\nExample: $(basename "$0") setup get_kubeconfig$O"
     exit
 }
 function repl { python3 -c "import sys; print(sys.stdin.read().replace('$1', '''$2'''))"; }
@@ -148,4 +153,5 @@ function load_pkgs() {
     done
 }
 e="\x1b" && S="$e[1m" && O="$e[0m" && L="$O$e[2m"
-false && . ./conf.sh || true
+
+false && . ./conf.sh && . ./main.sh || true

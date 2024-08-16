@@ -51,7 +51,7 @@ function transfer_caddy_binary {
     ok "have caddy binary on proxy"
 }
 
-# 💡 Turn the proxy node into a loadbalancer replacement
+#💡 Turn the proxy node into a loadbalancer replacement
 function ensure_proxy_is_loadbalancer {
     # No need to pay for a loadbalancer when we can use the proxy node
     # Straight forward transferral of setup to on premise k3s + existing LB
@@ -148,7 +148,7 @@ function ensure_server {
     ok "Server $name [$ip / $ip_priv]"
 }
 
-# 💡 Configures and starts IP forwarding on a server
+#💡 Configures and starts IP forwarding on a server
 function ensure_ip_forwarder {
     # Used for outgoing nat after proxy creation but maybe useful for other servers as well
     # Args: ip of server, normally $IP_PROXY_
@@ -166,7 +166,7 @@ function ensure_base_cfg_proxy { echo -e "$T_SSHD" | ssh "$1" bash -; }
 function ensure_tools_proxy { echo -e "$T_INST_TOOLS" | ssh "$1" bash -; }
 function ensure_tools_local { eval "$T_INST_TOOLS"; }
 
-# 💡 Installs tools on a new server (hk3s, binenv, kubectl, helm)
+#💡 Installs tools on a new server (hk3s, binenv, kubectl, helm)
 function postinstall {
     # Args: ip of server, normally $IP_PROXY_
     get_proxy_ips

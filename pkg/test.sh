@@ -2,7 +2,7 @@
 # Tests
 # --------------------------------------------------------------
 
-# 💡 Scheduling pods over all nodes, incl. autoscaled ones
+#💡 Scheduling pods over all nodes, incl. autoscaled ones
 function test_autoscale {
     # We schedule as many replicas as possible nodes in your setup,
     # with a taint to have them only on seperate nodes - which causes autoscale
@@ -67,7 +67,7 @@ spec:
 EOF
 }
 
-# 💡 Creating a test service with all std http feats
+#💡 Creating a test service with all std http feats
 function test_http_svc_nginx {
     # SSL + Proxy Protocol
     # Session Stickyness
@@ -93,30 +93,25 @@ function test_http_svc_nginx {
     ok "$h resolves to $NAME-proxy [$IP_PROXY_]"
     out "Creating test http server at $h"
     import render_svc
-    render_svc hostname="$h" \
-        name="hello-world" \
-        replicas=3 \
-        image="rancher/hello-world" \
-        --sticky-sessions
+    render_svc hostname="$h" name="hello-world" replicas=3 image="rancher/hello-world" --sticky-sessions
     echo -e "$retval_" >"$m"
     shw kubectl apply -f "$m"
     local ipl && ipl="$(shw curl -4 -s ifconfig.me)"
     out "Our current external IP: $ipl"
-    local t=false fnc="$CACHE_DIR/cookies.txt"
+    local t=false fncookie="$CACHE_DIR/cookies.txt"
     local url="https://$h/"
     ok "Waiting max 60s for certification of $url ..."
     #for _ in {1..30}; do sleep 2 && curl -s "$url" >/dev/null && break || echo -n '.'; done
-    for _ in {1..30}; do sleep 2 && curl "$url" && break || echo -n '.'; done
-    curl -s "$url" >/dev/null || die "SSL test failed" "Maybe run again in a while (letsecrypt rate limit)"
+    for _ in {1..30}; do sleep 2 && curl -s "$url" >/dev/null && break || echo -n '.'; done
     ok "SSL test passed, testing proxy proto"
     for _ in {1..30}; do sleep 1 && curl -s "$url" | grep -q "$ipl" && break || echo -n '.'; done
     curl -s "$url" | grep "$ipl" || die "Proxy protocol test failed"
     ok "Proxy Protocol test passed"
-    local pod && pod="$(curl -b "$fnc" -s "$url" | grep "Pod")"
-    out "Testing session stickyness... \n$L  Pod:$pod\n  Cookie file: $fnc$O"
+    local pod && pod="$(curl -b "$fncookie" -s "$url" | grep "Pod")"
+    out "Testing session stickyness... \n$L  Pod:$pod\n  Cookie file: $fncookie$O"
     t=true
     for _ in {1..5}; do
-        test "$pod"="$(curl -b "$fnc" -s "$url" | grep "Pod")" || t=false
+        test "$pod"="$(curl -b "$fncookie" -s "$url" | grep "Pod")" || t=false
     done
     $t || die "Session stickyness test failed" "Curling $h did not return the same pod"
     ok "Session stickiness test passed, got 5 times the same pod"

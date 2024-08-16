@@ -12,13 +12,28 @@ This repo here provides a set of bash functions, for
 https://youtu.be/EvzB_Q1gSds?t=54
 
 
+## Usage
 
+## Customization
+
+See [here](./docs/customization.md)
+
+
+
+
+
+```
+tests/test_setup.sh log 'cert' -f
+1 sync.go:290] "failed to create Order resource due to bad request, marking Order as failed" err="429 urn:ietf:params:acme:error:rateLimited: Error creating new order :: too many certificates (5) already issued for this exact set of domains in the last 168 hours: hello-world.citest.mydomain.net, retry after 2024-08-14T01:31:39Z: see https://letsencrypt.org/docs/duplicate-certificate-limit/" logger="cert-manager.controller" resource_name="hello-world.citest.mydomain.net-tls-1-3489545008" resource_namespace="default" resource_kind="Order" resource_version="v1"
+```
 
 ## K3s with: HA + AutoScaling + GitOps. 
 > For < 20€/month. From Scratch.
 
 
 ## Refs
+
+- [knowledge](./docs/knowledge.md)
 
 - https://community.hetzner.com/tutorials/how-to-set-up-nat-for-cloud-networks
 - https://github.com/vitobotta/hetzner-k3s
@@ -34,6 +49,13 @@ flowchart LR
     B --> M3
     B -.-> A1[Autoscaled 1]
 ```
+
+
+
+
+
+
+
 
 
 

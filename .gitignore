@@ -8,3 +8,4 @@ deploys/nginx
 docs/deploys/hello_autoscaler
 ssh_key*
 test_ssh_key*
+deploys

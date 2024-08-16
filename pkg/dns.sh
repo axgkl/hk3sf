@@ -18,7 +18,7 @@ function digitalocean_dns_list {
     curl_ GET "$DNS_API_TOKEN" "$u" | jq '.domain_records[] | {id, name, data, ttl}'
 }
 
-# 💡 List DO DNS entries by name
+#💡 List DO DNS entries by name
 function digitalocean_dns_by_name {
     # $1 maybe foo*, then we do startswith
     # foo maybe a subdomain, i.e. *.test
@@ -47,7 +47,7 @@ function digitalocean_dns_rm {
     done
 }
 
-# 💡 Adding a DNS subdomain entry
+#💡 Adding a DNS subdomain entry
 function dns_add {
     # Called autom. by ensure_proxy_is_loadbalancer
     # When $DOMAIN of our cluster is configured to be foo.bar.com, we create a record '*.foo', pointing to the IP of the proxy server, under domain bar.com, which you must own.
@@ -67,6 +67,7 @@ function dns_add {
         chk_have "$f" || { out "DNS provider $f not found. Hint: You may supply a callable as well." && return 1; }
     }
     shw "$f" '*.'"$subdom"'' "$ip" "$domain"
+    shw dig +short "host$(date +%s).$DOMAIN"
 }
 
 false && . ./tools.sh || true

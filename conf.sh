@@ -17,6 +17,7 @@ DFLT_TYPE="${SERVER:-cx22}"
 # flannel or cilium
 : "${HK_CNI:=cilium}"
 : "${HK_DNS_CLUSTER:=10.60.0.10}"
+# for certmanager
 : "${EMAIL:=}"
 : "${DNS_PROVIDER:=}"
 : "${DNS_API_TOKEN:=}"

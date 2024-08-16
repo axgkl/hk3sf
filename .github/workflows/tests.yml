@@ -12,7 +12,7 @@ jobs:
       HCLOUD_TOKEN_WRITE: ${{ secrets.HCRW }}
       DNS_API_TOKEN: ${{ secrets.DORW }}
       DNS_PROVIDER: digitalocean
-      DOMAIN: "citest.${{ secrets.DOMAIN }}"
+      DOMAIN: "citest2.${{ secrets.DOMAIN }}"
       EMAIL: "${{ secrets.EMAIL }}"
       SSH_KEY_PRIV: "${{ secrets.SSHKEY }}"
       HK_HOST_NETWORK: 7
@@ -31,15 +31,15 @@ jobs:
         run: bash ./tests/teardown.sh
 
       - name: Test base (secrets, syntax)
-        run: bash ./tests/test_secrets.sh
+        run: bash ./tests/base.sh
 
       - name: Cluster setup
         if: contains(env.act, ':setup:')
-        run: bash ./tests/test_setup.sh
+        run: bash ./tests/setup.sh
 
       - name: Full HTTP Svc Test
         if: contains(env.act, ':setup:')
-        run: bash ./tests/test_setup.sh test_http_svc_nginx
+        run: bash ./tests/setup.sh test_http_svc_nginx
 
       - name: Teardown
         if: ${{ always() && !env.keep }}
