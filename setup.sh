@@ -175,7 +175,7 @@ function postinstall {
     $force || { grep -q "postinstalled" <<<"$have" && { ok "server is postinstalled" && return; }; }
     shw download_hetzner_k3s "root@$ip" "$URL_HETZNER_K3S"
     shw ensure_base_cfg_proxy "root@$ip"
-    shw ensure_tools_proxy "root@$ip" &
+    shw ensure_tools_proxy "root@$ip" # can't do in bg, since hk3s checks for kubectl presence. might mock that later to speed things up, will only be needed after k3s is installed
     #     apt -y -qq update # post install...
     #     for p in fail2ban unattended-upgrades update-notifier-common; do apt -y -qq install "$p" systemctl enable "$p" systemctl start "$p" done
 }
