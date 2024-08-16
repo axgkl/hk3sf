@@ -240,6 +240,7 @@ function enable_local_kubectl {
 }
 function get_kubeconfig {
     test -z "$IP_PROXY_" && get_proxy_ips
+    shw clear_ip_from_known_hosts "$IP_PROXY_" >/dev/null 2>&1
     ssh "root@$IP_PROXY_" cat kubeconfig >"$FN_KUBECONFIG"
     chmod 600 "$FN_KUBECONFIG"
     test -z "FN_LINK_KUBECONFIG" || shw link_kubeconfig

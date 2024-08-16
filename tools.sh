@@ -107,7 +107,7 @@ function ssh {
 }
 
 function show_funcs {
-    local m="" && test -z "$2" || m="[$2]"
+    local m="" && test -z "${2:-}" || m="[$2]"
     out "$S\n󰊕 Module $1 $m:$O"
     grep -E '^function [a-z_]+ {' <"$1.sh" | grep -iE "${2:-}" | sed -e 's/function //' | cut -d '{' -f 1 | sort || true
 }
