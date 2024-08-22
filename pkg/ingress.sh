@@ -91,7 +91,7 @@ function render_ingress_nginx {
         n=* | name=*) name="${arg#*=}" ;;
         -n | --nossl) ssl=false ;;
         -s | --sticky-sessions) stk=true ;;
-        *) out "not processed: $arg" ;;
+        *) out "ignoring arg: $arg" ;;
         esac
     done
     test -z "$name" && die "name not set" "💡 Use n <name>"

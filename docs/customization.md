@@ -7,7 +7,7 @@ There are some degrees of declative possibilites, most of which based on [hetzn3
 Check [../conf.sh](../conf.sh) for the main configuration file.
 
 
-## Extending / Bending the Functions
+## Imperative: Extending / Bending the Functions
 
 Main value, if any, is to suggest a somewhat solid and transparent basis for your own needs - i.e. you'll have to adapt the bash source and provide new
 
@@ -18,7 +18,7 @@ or to change existing ones' (defaults)
 
 ### LSP
 
-Lsp in use is shellcheck. This provides, besides formatting and diagnostics, mainly `gd` (goto definition) and is considered a must have to jump around in the code:
+Lsp in use is shellcheck. This provides, besides formatting and diagnostics, mainly `gd` (goto definition) and is considered a must have to jump around (and by this learn) the code:
 
 [![asciicast](https://asciinema.org/a/ARf3g4YtwHeD1TC64WUhDyPSd.svg)](https://asciinema.org/a/ARf3g4YtwHeD1TC64WUhDyPSd)
 

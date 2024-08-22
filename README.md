@@ -6,23 +6,110 @@
 
 ## About
 
-[Hetzner-k3s][hk3s] is nicely engineered general k3s installation tool on Hetzner, with a large degree of declarative possibilities for customization.
+[Hetzner-k3s][hk3s] is nicely engineered general k3s installation tool on Hetzner, with a large degree of declarative possibilities for customization. As terraform, it is a single static binary and idempotent, with a single source of truth. In contrast to terraform it is straightforward to use, with far less abstractions but a lot of built in best practices, incl CNI and autoscaling, plus faster.
 
-This repo here provides a set of bash functions, for 
+This repo here provides a set of **bash functions**, incl. possibly useful support tools to organize them, in order to further automate _around_ the pure k3s installation, which hetzner-k3s provides.
 
-https://youtu.be/EvzB_Q1gSds?t=54
+## Not a Wrapper
+
+❗ This repo is **not** meant to provide a convenience wrapper, to get you to your k3s setup. Unmodified it works for me - but it won't for you. It is _neither_ meant to relief you off the effort to learn the underlying machinery, nor from adding/adjusting code, to customize!
+
+> As nearly always, Prime nails it: https://youtu.be/EvzB_Q1gSds?t=54
+
+So: **Only** if you _anyway_ would automate your cluster setup using bash scripts, you might find this useful. 
+
+*You will have to modify the functions to your needs, e.g. provide dns provisioning for **your** provider, since you won't use the [built in one](../pkg/dns.sh) (DO) and/or supply [ingress setup](../pkg/ingress.sh) functions, when **not** using nginx and so on.* What we did aim for, is to make the places _where_ to customize as canonical as possible, plus provide blueprints, for _how_ to do it.
+
+## Features
+
+### Pre K3s Installation
+
+Focus is on creating the cluster with private IPs only, and a _proxy_ server in front of them:
+
+```mermaid
+flowchart LR
+    A[World] --> B[Bastion Proxy\nIP pub\nOpt.LoadBalancer]
+    B --priv net--> M1[Master 1\n...\nMaster 3]
+    B --priv net--> w1[Worker 1\n...\nWorker n]
+    B --priv net--> a1[Autoscaled 1\n...\nAutoscaled n]
+```
+
+That bastion server is the only one with a public IP, and can be equipped with a l4 loadbalancer, forwarding the traffic into the cluster, like a hetzner loadbalancer would do.
+
+
+💡 Using the bastion node as loadbalancer is optional. [hetzner-k3s][hk3s] does by default create hetzner loadbalancers for you, using the hetzner cloud controller manager (ccm).
+
+## Why
+
+- **Transferability**: NOT using the hetzner ccm to auto provision cluster external loadbalancers means in turn: The setup, incl. service "yamls" is hetzner ccm annotion free, i.e. not specific to Hetzner, can be used on premise, behind a given (customer) load balancer - but also at any other cloud provider.
+- **Security**: No public IPs on the nodes, only the bastion node has one.
+- **Cost**: Hetzner Load balancers are expensive, compared to the cost of a single node. Pub IPs also cost money.
+
+Downside clearly is HA - the bastion node is a single point of failure, if (and only if) it is also the load balancer. BUT: It is trivial to replace, even w/o any kubernetes skills, since not part of the actual k8s cluster.
+
+Also: Like hetzner's lbs, ours works on  layer 4, supporting proxy protocol, but unlike with hetzner lbs, there is no hetzner ccm style machinery in place within kubernetes, which would automatically update the loadbalancer, when a new ingress port comes up. Therefore, the loadbalancer we create on the proxy is currently forwarding only http and https to node ports, _statically_ configured for the (nginx) ingress, on 30080 and 30443. Let me know if you are aware of something like a ccm, which could fire e.g. configurable http requests, when another port should be served for the internet, so that we could provide a reconfig handler for such requests, on the proxy lb. For now, if you all the time have such requirements, use hetzner's lb or add the new port to the proxy lb manually, e.g. using the functions within this repo.
+___
+
+We provide all the functions necessary to 
+
+- create the private network
+- bastion node itself, with ssh key
+- tools (hetzner-k3s, kubectl, helm) and optional loadbalancer service on it
+- cloud init config for hetzner-k3s, so that the priv ip nodes can reach the internet
+
+Then hetzner-k3s can be run from there, to create the cluster.
+
+### K3s Installation
+
+From the proxy server, we then kick off hetzner-k3s, using a config we synthesized from the environ.
+
+
+### Post K3s Installation
+
+We provide functions to
+- transfer kubeconfig from the bastion to the local machine
+- configure local ssh
+- install cert-manager into the cluster
+- install ingress-nginx into the cluster
+- install services using that ingress into the cluster, in a way so that https traffic from the world can reach the application pods with
+  - working certificates
+  - optional pod affinity via cookie ("sticky sessions")
+  - source ip preservation (using [proxy protocol](https://www.haproxy.org/download/1.8/doc/proxy-protocol.txt))
+  - autoscaling support 
+
 
 
 ## Usage
+
+In general the script provides its functions after being sourced from a bash script _you_ provide and make executable.
+
+See the ci [../tests/setup.sh](../tests/setup.sh) script for an example, which installs the full cluster from scratch.
+
+💡 When you pass _arguments_ to that script, this results in an execution of the given function and exit of the script, w/o running the subsequent functions after sourcing. 
+
+General layout of your script is therefore:
+
+```bash
+CONFIGVAR1=CONFIGVAL1
+...
+source <dir>/main.sh "$@" # causes exit when an arg is passed, i.e. a function name
+
+setup_function1 
+setup_function2 
+...
+```
+
+`yourscript -h` lists all available functions.
+
 
 ## Customization
 
 See [here](./docs/customization.md)
 
 
+## Details
 
-
-
+ [here](./docs/customization.md)
 ```
 tests/test_setup.sh log 'cert' -f
 1 sync.go:290] "failed to create Order resource due to bad request, marking Order as failed" err="429 urn:ietf:params:acme:error:rateLimited: Error creating new order :: too many certificates (5) already issued for this exact set of domains in the last 168 hours: hello-world.citest.mydomain.net, retry after 2024-08-14T01:31:39Z: see https://letsencrypt.org/docs/duplicate-certificate-limit/" logger="cert-manager.controller" resource_name="hello-world.citest.mydomain.net-tls-1-3489545008" resource_namespace="default" resource_kind="Order" resource_version="v1"
@@ -42,14 +129,6 @@ tests/test_setup.sh log 'cert' -f
 - https://www.youtube.com/watch?v=u5l-F8nPumE&t=466s
 - https://gimlet.io
 
-```mermaid
-flowchart LR
-    A[World] --> B[Bastion\nIP pub, DNS]
-    B --> M1[M1\nk3s master1\nIP priv]
-    B --> M2
-    B --> M3
-    B -.-> A1[Autoscaled 1]
-```
 
 
 

@@ -93,7 +93,7 @@ function test_http_svc_nginx {
     ok "$h resolves to $NAME-proxy [$IP_PROXY_]"
     out "Creating test http server at $h"
     import render_svc
-    render_svc hostname="$h" name="hello-world" replicas=3 image="rancher/hello-world" --sticky-sessions
+    shw render_svc hostname="$h" name="hello-world" replicas=3 image="rancher/hello-world" --sticky-sessions
     echo -e "$retval_" >"$m"
     shw kubectl apply -f "$m"
     local ipl && ipl="$(shw curl -4 -s ifconfig.me)"
@@ -115,8 +115,8 @@ function test_http_svc_nginx {
     done
     $t || die "Session stickyness test failed" "Curling $h did not return the same pod"
     ok "Session stickiness test passed, got 5 times the same pod"
-    local msg="🟩 Success. Visit https://$h 🎇"
-    $no_rm && ok "$msg" "Note: \$keep was set -> call this with rm to delete the service" && return
+    local msg="🟩 Success 🎇 "
+    $no_rm && ok "$msg Visit https://$h." "Note: \$keep was set -> call this with rm to delete the service" && return
     shw kubectl delete -f "$m"
     ok "$msg" "You can run this func with -k (keep) or export keep=true, and I will not destroy the server"
 }

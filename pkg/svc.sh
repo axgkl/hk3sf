@@ -10,7 +10,7 @@ function render_svc {
         I=* | ingress=*) ingress="${arg#*=}" ;;
         i=* | image=*) image="${arg#*=}" ;;
         n=* | name=*) name="${arg#*=}" ;;
-        *) out "not processed: $arg" ;;
+        *) out "ignoring arg: $arg" ;;
         esac
     done
 
