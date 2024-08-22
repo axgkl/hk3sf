@@ -45,7 +45,7 @@ DFLT_TYPE="${SERVER:-cx22}"
 : "${SSH_KEY_PRIV:=}"
 # Until v2 is released, this contains a few patches:
 #: "${URL_HETZNER_K3S:=https://github.com/axgkl/binaries/raw/master/hetzner-k3s}"
-: "${URL_HETZNER_K4S:=https://github.com/vitobotta/hetzner-k3s/releases/download/v2.0.3/hetzner-k3s-linux-amd64}"
+: "${URL_HETZNER_K3S:=https://github.com/vitobotta/hetzner-k3s/releases/download/v2.0.3/hetzner-k3s-linux-amd64}"
 # xcaddy with lb4 module added - in use when proxy is lb:
 : "${URL_CADDY:=https://github.com/axgkl/binaries/raw/master/caddy-amd64}"
 : "${HK_VER_K3S:=v1.30.2+k3s2}" # registry mirror requires k3s > 1.30.2
