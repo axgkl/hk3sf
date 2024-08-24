@@ -12,7 +12,7 @@ This repo here provides a set of **bash functions**, incl. possibly useful suppo
 
 ## Not a Wrapper
 
-❗ This repo is **not** meant to provide a convenience wrapper, to get you to your k3s setup. Unmodified it works for me - but it won't for you. It is _neither_ meant to relief you off the effort to learn the underlying machinery, nor from adding/adjusting code, to customize!
+❗ This repo is **not** meant to provide a convenience wrapper, to get you to **your** k3s setup. Unmodified it works for me - but it won't for you. It is _neither_ meant to relief you off the effort to learn the underlying machinery, nor from adding/adjusting code, to customize!
 
 > As nearly always, Prime nails it: https://youtu.be/EvzB_Q1gSds?t=54
 
@@ -50,11 +50,11 @@ Downside clearly is HA - the bastion node is a single point of failure, if (and 
 Also: Like hetzner's lbs, ours works on  layer 4, supporting proxy protocol, but unlike with hetzner lbs, there is no hetzner ccm style machinery in place within kubernetes, which would automatically update the loadbalancer, when a new ingress port comes up. Therefore, the loadbalancer we create on the proxy is currently forwarding only http and https to node ports, _statically_ configured for the (nginx) ingress, on 30080 and 30443. Let me know if you are aware of something like a ccm, which could fire e.g. configurable http requests, when another port should be served for the internet, so that we could provide a reconfig handler for such requests, on the proxy lb. For now, if you all the time have such requirements, use hetzner's lb or add the new port to the proxy lb manually, e.g. using the functions within this repo.
 ___
 
-We provide all the functions necessary to 
+We provide the functions necessary to 
 
 - create the private network
 - bastion node itself, with ssh key
-- tools (hetzner-k3s, kubectl, helm) and optional loadbalancer service on it
+- tools (hetzner-k3s, kubectl, helm) and [optional load balancer service](./docs/l4lb.md) on it
 - cloud init config for hetzner-k3s, so that the priv ip nodes can reach the internet
 
 Then hetzner-k3s can be run from there, to create the cluster.
@@ -63,6 +63,7 @@ Then hetzner-k3s can be run from there, to create the cluster.
 
 From the proxy server, we then kick off hetzner-k3s, using a config we synthesized from the environ.
 
+[Here](./docs/privip.md) are the details regarding a private IP only cluster setup.
 
 ### Post K3s Installation
 
@@ -76,6 +77,7 @@ We provide functions to
   - optional pod affinity via cookie ("sticky sessions")
   - source ip preservation (using [proxy protocol](https://www.haproxy.org/download/1.8/doc/proxy-protocol.txt))
   - autoscaling support 
+
 
 
 
