@@ -217,7 +217,7 @@ existing_network: ten-0
 # kube_proxy_args:
 # - arg1
 # - ...
-#api_server_hostname: k3s1.axlc.net # optional: DNS for the k8s API LoadBalancer. After the script has run, create a DNS record with the address of the API LoadBalancer.
+#api_server_hostname: k3s1.mydomain.net # optional: DNS for the k8s API LoadBalancer. After the script has run, create a DNS record with the address of the API LoadBalancer.
 
 ```
 </details>

@@ -35,7 +35,7 @@ metadata:
 spec:
   ingressClassName: caddy
   rules:
-  - host: foo2.k3s.axlc.net
+  - host: foo2.k3s.mydomain.net
     http:
       paths:
       - path: /x

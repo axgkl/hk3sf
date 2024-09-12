@@ -11,18 +11,29 @@ flowchart LR
     B --priv net--> w1[Worker 1\n...\nWorker n]
     B --priv net--> a1[Autoscaled 1\n...\nAutoscaled n]
 ```
+
+Why:
+
+1. want a cost effective cluster, but
+1. don't want to ever have to recover a broken k8s. So: 3 masters.
+1. => Workloads on (cheap) masters - but with **autoscaled** add/delete workers if required.
+
+IPs: Priv IPs are for free -> Only 1 pub IP (on a bastion outside the k8s cluster, which runs trivially restorable services w/o k8s). Also more secure, only this to shield.
+
 💡 [This repo](https://github.com/axgkl/hk3sf) provides a set of bash functions, to automate that setup.
 
 # Preparation
+
 - Create a private network, using the hetzner ui, say on 10.1.0.0/16, named `ten-1`.
 - Create a bastion node, with a pub ip and membership within that network. Usually that first node gets `.2` assigned, i.e. `10.1.0.2` in our example.
 - Secure the node like you want but keep allowing outgoing traffic to the internet and ssh access from your local machine, possibly from a jump host.
 
-💡 The node may be super slim, resource/cost wise. Distribution: We tested with ubuntu/amd64, but any other should work as well.
+💡 The node may be super slim, resource/cost wise. Distribution: We tested with ubuntu/amd64, but any other _should_ work as well.
 
 ## On Bastion Node
 
 ### Tools
+
 Log in with ssh and install
 
 - [hetzner-k3s][hk]
@@ -35,7 +46,7 @@ Log in with ssh and install
 
 #### System
 
-Enable ip forwarding and masquerading persistently, so that the kubernetes nodes can access the Internet. 
+Enable ip forwarding and masquerading persistently, so that the kubernetes nodes can access the Internet.
 
 E.g. with such a unit file, if the public ip is on `eth0`:
 
@@ -78,7 +89,7 @@ networking:
     ipv4: false # that's what this is all about
     ipv6: true
   private_network:
-    enabled : true
+    enabled: true
     subnet: 10.1.0.0/16 # our example priv network. adapt to yours.
     existing_network_name: "ten-1"
   cni:
@@ -120,41 +131,40 @@ embedded_registry_mirror:
   enabled: true
 
 additional_packages:
- - ifupdown
+  - ifupdown
 api_server_hostname: first_master # tested with this but should work w/o that as well.
 
-
 post_create_commands:
-- echo "Started" > /.status # just to debug
-- timedatectl set-timezone Europe/Berlin
-- echo 'ecdsa-sha2-nistp256 AAAAE2V....= root@citest-proxy' >> /root/.ssh/authorized_keys
-- echo 'ecdsa-sha2-nistp256 AAAAE2V....= gk@axgk' >> /root/.ssh/authorized_keys
-- echo "root:$(head -c 50 /dev/urandom | base64)" | chpasswd
-- mkdir -p /etc/network/interfaces.d
-- iface="$(ip -o -4 addr list | grep " 10.1." | cut -d " " -f 2)"
-- |
-  cat > /etc/network/interfaces.d/$iface <<EOF
-  auto $iface
-  iface $iface inet dhcp
-    post-up ip route add default via 10.1.0.1
-    post-up ip route add 169.254.169.254 via 172.31.1.1
-  EOF
-- rm -f /etc/resolv.conf
-- |
-  cat > /etc/resolv.conf <<EOF
-  nameserver 185.12.64.1
-  nameserver 185.12.64.2
-  edns edns0 trust-ad
-  search .
-  EOF
-- ip route add 169.254.0.0/16 via 172.31.1.1
-- ip route add default via 10.1.0.1
-- echo "Done" > /.status # just to debug
-
+  - echo "Started" > /.status # just to debug
+  - timedatectl set-timezone Europe/Berlin
+  - echo 'ecdsa-sha2-nistp256 AAAAE2V....= root@citest-proxy' >> /root/.ssh/authorized_keys
+  - echo 'ecdsa-sha2-nistp256 AAAAE2V....= gk@axgk' >> /root/.ssh/authorized_keys
+  - echo "root:$(head -c 50 /dev/urandom | base64)" | chpasswd
+  - mkdir -p /etc/network/interfaces.d
+  - iface="$(ip -o -4 addr list | grep " 10.1." | cut -d " " -f 2)"
+  - |
+    cat > /etc/network/interfaces.d/$iface <<EOF
+    auto $iface
+    iface $iface inet dhcp
+      post-up ip route add default via 10.1.0.1
+      post-up ip route add 169.254.169.254 via 172.31.1.1
+    EOF
+  - rm -f /etc/resolv.conf
+  - |
+    cat > /etc/resolv.conf <<EOF
+    nameserver 185.12.64.1
+    nameserver 185.12.64.2
+    edns edns0 trust-ad
+    search .
+    EOF
+  - ip route add 169.254.0.0/16 via 172.31.1.1
+  - ip route add default via 10.1.0.1
+  - echo "Done" > /.status # just to debug
 ```
 
 #### Notes on the Post Create Config
-These commands are basically run as cloud init, after a node is created. 
+
+These commands are basically run as cloud init, after a node is created.
 
 Since we use the 'classic' way of configuring the network, using /etc/network/interfaces.d, on ubuntu we needed to add the `ifupdown` package.
 
@@ -171,7 +181,7 @@ With such a config, the hetzner-k3s setup should run through, creating a private
 
 #### Local kubectl/helm support
 
-You want to copy the kubeconfig file, which the installer script created on the bastion node to your local machine, so that you can manage the cluster from there. 
+You want to copy the kubeconfig file, which the installer script created on the bastion node to your local machine, so that you can manage the cluster from there.
 
 I change the server line within the copied local kubeconfig to this:
 
@@ -181,7 +191,7 @@ server: https://127.0.0.1:16443
 
 and configure ssh like this:
 
-```
+```config
 # ---- cluster citest
 Host citest-proxy
     HostName 37.27.... # pub ip of the bastion node
@@ -212,8 +222,5 @@ You can install a layer 4 load balancer on bastion, turning it into a full proxy
 
 [This repo](https://github.com/axgkl/hk3sf) explains how to do that.
 
-
 [hk]: https://github.com/vitobotta/hetzner-k3s
 [binenv]: https://github.com/devops-works/binenv
-
-

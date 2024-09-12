@@ -273,7 +273,7 @@ Then change the `nip.io` hostname to yours, e.g.
 
      …/gitops/caddy_ingress❯ cat hello-world.yaml | grep host 
         #- host: hello-world.95.217.1.185.nip.io
-      - host: hello.k3s.axlc.net
+      - host: hello.k3s.mydomain.net
       - host: hello-world.95.217.1.185.nip.io  <!---- replace with your bastion node pub ip
 
 and apply.

@@ -6,5 +6,5 @@ controller:
       load-balancer.hetzner.cloud/name: nginx
       load-balancer.hetzner.cloud/use-private-ip: "true"
       load-balancer.hetzner.cloud/uses-proxyprotocol: 'true'
-      load-balancer.hetzner.cloud/hostname: test1.axlc.net
+      load-balancer.hetzner.cloud/hostname: test1.mydomain.net
       load-balancer.hetzner.cloud/http-redirect-https: 'false'

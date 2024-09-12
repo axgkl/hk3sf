@@ -18,12 +18,12 @@ or to change existing ones' (defaults)
 
 ### LSP
 
-Lsp in use is shellcheck. This provides, besides formatting and diagnostics, mainly `gd` (goto definition) and is considered a must have to jump around (and by this learn) the code:
+Lsp in use is [ shellcheck ][sc]. This provides, besides formatting and diagnostics, mainly `gd` (goto definition) and is considered a must have to jump around (and by this learn) the code:
 
-[![asciicast](https://asciinema.org/a/ARf3g4YtwHeD1TC64WUhDyPSd.svg)](https://asciinema.org/a/ARf3g4YtwHeD1TC64WUhDyPSd)
+[![asciicast](https://asciinema.org/a/arf3g4ytwhed1tc64wuhdypsd.svg)](https://asciinema.org/a/arf3g4ytwhed1tc64wuhdypsd)
 
 
-### Import system
+### import system
 
 Always sourced are only these:
 
@@ -69,17 +69,17 @@ dns_add
 
 That works with a helper function `import`, which will find the module containing the function, then sources it. The entry function in main will do that for you, i.e. finds the pkg module, which contained `digitalocean_dns_list`, by calling `import digitalocean_dns_list`. 
 
-If a function from another package is required, while executing a function, then it can 'manually' import it:
+If a function from another "package" is required, while executing a function, then it can 'manually' import it:
 
 E.g.:
 
 ```bash
-     test i="nginx" && ingr=render_ingress_nginx || ingr="render_ingress_$ingress"
-    import "$ingr"
-    "$ingr" "$@"
+    test i="nginx" && func=render_ingress_nginx || func="render_ingress_$ingress"
+    import "$func"
+    "$func" "$@"
 ```
 
-Now, in order to keep the LSP working even for such dynamic imports but also for `goto definition` support for functions in `tools` and variables in `conf` outside the of the main module, which imports them statically, we use this trick at the end of modules:
+Now, in order to keep the LSP working even for such dynamic imports but also for `goto definition` support for functions in `tools` and variables in `conf` outside the of the main module, which imports them statically, we use this little trick at the end of modules:
 
 ```bash
 false && . ./tools.sh && . ./conf.sh && . ./pkg/ingress.sh || true
