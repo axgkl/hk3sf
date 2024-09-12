@@ -84,7 +84,7 @@ function images { api_get images "$@"; }
 function load_balancers { api_get load_balancers "$@"; }
 function networks { api_get networks "$@"; }
 function servers { api_get servers "$@"; }
-function ssh_keys { api_get ssh_keys "$@"; }
+function ssh_keys { api_get ssh_keys "$@" | tr -d '\n'; }
 function volumes { api_get volumes "$@"; }
 function have { type "$1" >/dev/null 2>&1; }
 
