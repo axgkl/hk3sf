@@ -26,6 +26,7 @@ function ensure_local_ssh_key {
 }
 
 function ensure_ssh_key {
+    set -x
     local keys && keys="$(ssh_keys)"
     local fp && fp="$SSH_KEY_FINGERPRINT_"
     function n_ { jq -r '.ssh_keys[] | select(.fingerprint == "'"$fp"'") | .name' <<<"$keys"; }
@@ -41,6 +42,7 @@ function ensure_ssh_key {
     fi
     ok "SSH key known to Hetzner ($n)"
     SSH_KEY_NAME_="$n"
+    set +x
 }
 
 function transfer_caddy_binary {
