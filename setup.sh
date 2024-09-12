@@ -28,7 +28,6 @@ function ensure_local_ssh_key {
 function ensure_ssh_key {
     local keys && keys="$(ssh_keys)"
     local fp && fp="$SSH_KEY_FINGERPRINT_"
-    set -x
     function n_ { jq -r '.ssh_keys[] | select(.fingerprint == "'"$fp"'") | .name' <<<"$keys"; }
     local n && n="$(n_)"
     if [ -z "$n" ]; then
