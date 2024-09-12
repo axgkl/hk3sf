@@ -4,6 +4,8 @@
 
 [![Tests](https://github.com/axgkl/hk3sf/actions/workflows/tests.yml/badge.svg)](https://github.com/axgkl/hk3sf/actions/workflows/tests.yml)
 
+<img src="https://github.com/axgkl/hk3sf/actions/workflows/tests.yml/badge.svg"/> 
+
 ## About
 
 [Hetzner-k3s][hk3s] is nicely engineered general k3s installation tool on Hetzner, with a large degree of declarative possibilities for customization. As terraform, it is a single static binary and idempotent, with a single source of truth. In contrast to terraform it is straightforward to use, with far less abstractions but a lot of built in best practices, incl CNI and autoscaling, plus faster.
@@ -12,13 +14,14 @@ This repo here provides a set of **bash functions**, incl. possibly useful suppo
 
 ## Not a Wrapper
 
-❗ This repo is **not** meant to provide a convenience wrapper, to get you to **your** k3s setup. Unmodified it works for me - but it won't for you. It is _neither_ meant to relief you off the effort to learn the underlying machinery, nor from adding/adjusting code, to customize!
+❗ This repo is **not** meant to be a convenience wrapper, to get you to **your** k3s setup. Unmodified it works for me - but it won't for you. It is _neither_ meant to relief you off the effort to learn the underlying machinery, nor from adding/adjusting code, to customize!
 
-> As nearly always, Prime nails it: https://youtu.be/EvzB_Q1gSds?t=54
+> As nearly always, [Prime nails it](https://youtu.be/EvzB_Q1gSds?t=54).
 
-So: **Only** if you _anyway_ would automate your cluster setup using bash scripts, you might find this useful. 
+So: **Only** if you _anyway_ would automate your cluster setup using bash scripts, you might find this useful, as a starting point.
 
-*You will have to modify the functions to your needs, e.g. provide dns provisioning for **your** provider, since you won't use the [built in one](../pkg/dns.sh) (DO) and/or supply [ingress setup](../pkg/ingress.sh) functions, when **not** using nginx and so on.* What we did aim for, is to make the places _where_ to customize as canonical as possible, plus provide blueprints, for _how_ to do it.
+*You **will** have to modify the functions to your needs, e.g. provide dns provisioning for **your** provider, since you won't use the [built in one](../pkg/dns.sh) (DO) and/or supply [ingress setup](../pkg/ingress.sh) functions, when **not** using nginx and so on.*  
+What I _did_ aim for, is to make the places _where_ to customize as canonical as possible, plus provide blueprints, for _how_ to do it.
 
 ## Features
 
@@ -34,20 +37,12 @@ flowchart LR
     B --priv net--> a1[Autoscaled 1\n...\nAutoscaled n]
 ```
 
-That bastion server is the only one with a public IP, and can be equipped with a l4 loadbalancer, forwarding the traffic into the cluster, like a hetzner loadbalancer would do.
-
+That bastion server is the only one with a public IP, and [can be equipped with a l4 loadbalancer](./docs/l4lb.md), forwarding the traffic into the cluster, like a hetzner loadbalancer would do.
 
 💡 Using the bastion node as loadbalancer is optional. [hetzner-k3s][hk3s] does by default create hetzner loadbalancers for you, using the hetzner cloud controller manager (ccm).
 
-## Why
+[Here](./docs/l4lb.md) is a detailed description of the loadbalancer setup, incl. some reasons for it.
 
-- **Transferability**: NOT using the hetzner ccm to auto provision cluster external loadbalancers means in turn: The setup, incl. service "yamls" is hetzner ccm annotion free, i.e. not specific to Hetzner, can be used on premise, behind a given (customer) load balancer - but also at any other cloud provider.
-- **Security**: No public IPs on the nodes, only the bastion node has one.
-- **Cost**: Hetzner Load balancers are expensive, compared to the cost of a single node. Pub IPs also cost money.
-
-Downside clearly is HA - the bastion node is a single point of failure, if (and only if) it is also the load balancer. BUT: It is trivial to replace, even w/o any kubernetes skills, since not part of the actual k8s cluster.
-
-Also: Like hetzner's lbs, ours works on  layer 4, supporting proxy protocol, but unlike with hetzner lbs, there is no hetzner ccm style machinery in place within kubernetes, which would automatically update the loadbalancer, when a new ingress port comes up. Therefore, the loadbalancer we create on the proxy is currently forwarding only http and https to node ports, _statically_ configured for the (nginx) ingress, on 30080 and 30443. Let me know if you are aware of something like a ccm, which could fire e.g. configurable http requests, when another port should be served for the internet, so that we could provide a reconfig handler for such requests, on the proxy lb. For now, if you all the time have such requirements, use hetzner's lb or add the new port to the proxy lb manually, e.g. using the functions within this repo.
 ___
 
 We provide the functions necessary to 

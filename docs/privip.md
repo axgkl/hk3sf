@@ -18,7 +18,7 @@ flowchart LR
 - Create a bastion node, with a pub ip and membership within that network. Usually that first node gets `.2` assigned, i.e. `10.1.0.2` in our example.
 - Secure the node like you want but keep allowing outgoing traffic to the internet and ssh access from your local machine, possibly from a jump host.
 
-💡 The node may be super slim, resource/cost wise. We tested with ubuntu/amd64, but any other should work as well.
+💡 The node may be super slim, resource/cost wise. Distribution: We tested with ubuntu/amd64, but any other should work as well.
 
 ## On Bastion Node
 
@@ -159,21 +159,21 @@ These commands are basically run as cloud init, after a node is created.
 Since we use the 'classic' way of configuring the network, using /etc/network/interfaces.d, on ubuntu we needed to add the `ifupdown` package.
 
 - Added ssh pub keys, which should be allowed to log in to the k3s nodes.
-- Run chpasswd in order to avoid any mails from hetzner, reminding to change the password, after autoscaled nodes where created.
-- Find the interface name of the one which is in the private network (distri dependent)
+- Run `chpasswd`, in order to avoid any mails from hetzner, reminding you to change the password, after autoscaled nodes are created.
+- Find the interface name of the one interface, which is in the private network (distri dependent)
 - Create the interface config file, with the default route to the gateway of the private network, which is our bastion node. This has to be the `.1` address, not the priv ip of the bastion node!
 - Also add a route to hetzner's api server on 169.254.169.254, which seems to be always via 172.31.1.1
 - Lastly we configure hetzner's DNS servers and configure the above routes via cli commands, avoiding the need for a reboot.
 
-With such a config, the hetzner-k3s setup should work, creating a private IP only cluster.
+With such a config, the hetzner-k3s setup should run through, creating a private IP only cluster.
 
 ### Post Create
 
 #### Local kubectl/helm support
 
-You might want to copy the kubeconfig file, which the installer script created on the bastion node to your local machine, so that you can manage the cluster from there. 
+You want to copy the kubeconfig file, which the installer script created on the bastion node to your local machine, so that you can manage the cluster from there. 
 
-I change the server line in it to this:
+I change the server line within the copied local kubeconfig to this:
 
 ```yaml
 server: https://127.0.0.1:16443

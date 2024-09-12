@@ -4,10 +4,21 @@ You don't necessarily need to use hetzner's layer 4 load balancer.
 
 Below we describe the mechanics of 'rolling your own', on the proxy server in front of your cluster. We use [mholt/caddy-l4][cl4] here, but nginx or traefik would work as well.
 
+## Why
+
+- **Transferability**: NOT using the hetzner ccm to auto provision cluster external loadbalancers means in turn: The setup, incl. service "yamls" is hetzner ccm annotion free, i.e. not specific to Hetzner, can be used on premise, behind a given (customer) load balancer - but also at any other cloud provider.
+- **Security**: No public IPs on the nodes, only the bastion node has one.
+- **Cost**: Hetzner Load balancers are expensive, compared to the cost of a single node. Pub IPs also cost money.
+
+Downside clearly is HA - the bastion node is a single point of failure, if (and only if) it is also the load balancer. BUT: It is trivial to replace, even w/o any kubernetes skills, since not part of the actual k8s cluster.
+
+Also: Like hetzner's lbs, ours works on  layer 4, supporting proxy protocol, but unlike with hetzner lbs, there is no hetzner ccm style machinery in place within kubernetes, which would automatically update the loadbalancer, when a new ingress port comes up. Therefore, the loadbalancer we create on the proxy is currently forwarding only http and https to node ports, _statically_ configured for the (nginx) ingress, on 30080 and 30443. Let me know if you are aware of something like a ccm, which could fire e.g. configurable http requests, when another port should be served for the internet, so that we could provide a reconfig handler for such requests, on the proxy lb. For now, if you all the time have such requirements, use hetzner's lb or add the new port to the proxy lb manually, e.g. using the functions within this repo.
+
+## How
 
 The function `ensure_proxy_is_loadbalancer` in [setup.sh](../setup.sh) installs caddy with the l4 extension and configures it to forward traffic to the cluster nodes, adding the [proxy protocol](https://www.haproxy.com/blog/use-the-proxy-protocol-to-preserve-a-clients-ip-address) header.
 
-Below is a sample caddy config:
+Below is a sample caddy config, for the private network on `10.1.0.0/16` and 3 master nodes:
 
 
 ```json
@@ -99,9 +110,9 @@ So: This works, when we configure our ingress within the cluster, with Node Port
 
 In turn we do _not_ need to provide annotations for the hetzner ccm, which would automatically update the hetzner loadbalancer, when a new ingress port comes up.
 
-=> If you have rather dynamics requirements, regarding open ports on the Internet, then use use hetzner's lb - or add the new port to the proxy lb manually in such occasions.
+=> If you have rather dynamics requirements, regarding open ports on the Internet, then use use hetzner's lb - or add the new port to the proxy lb manually, in such occasions.
 
-I'm not aware of some ccm, which could e.g. run http config commands on new ingress ports, so that we could provide a reconfig handler for such requests, on the proxy lb. Let me know via an issue, if you are.
+Again, I'm not aware of some ccm, which could e.g. run http config requests on new ingress ports, so that we could provide a reconfig handler for such requests, on the proxy lb. Let me know via an issue, if you are.
 
 ---
 
