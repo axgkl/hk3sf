@@ -78,6 +78,7 @@ In general the script provides its functions after being sourced from a bash scr
 
 See the ci [../tests/setup.sh](../tests/setup.sh) script for an example, which installs the full cluster from scratch.
 
+
 💡 When you pass _arguments_ to that script, this results in an execution of the given function and exit of the script, w/o running the subsequent functions after sourcing.
 
 General layout of your script is therefore:
