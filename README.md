@@ -94,6 +94,11 @@ setup_function2
 
 `yourscript -h` lists all available functions.
 
+## CI Automation
+
+See [here](./docs/ci.md)
+
+
 ## Customization
 
 See [here](./docs/customization.md)

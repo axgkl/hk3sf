@@ -11,3 +11,8 @@ LANG=en_US.UTF-8
 LC_ALL=en_US.UTF-8
 set +a
 
+
+here="${BASH_SOURCE[0]:-$0}"
+here="$( builtin cd "$( dirname "${here}" )" && pwd )"
+alias ci="$here/ci-cluster.sh"
+

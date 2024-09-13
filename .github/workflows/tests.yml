@@ -42,5 +42,6 @@ jobs:
         run: bash ./tests/setup.sh test_http_svc_nginx
 
       - name: Teardown
-        if: ${{ always() && !env.keep }}
+        # runs even if previous steps failed, when keep is not given and setup is given:
+        if: ${{ always() && !env.keep && contains(env.act, ':setup:') }}
         run: bash ./tests/teardown.sh
