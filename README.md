@@ -29,10 +29,10 @@ Focus is on creating the cluster with private IPs only, and a _proxy_ server in 
 
 ```mermaid
 flowchart LR
-    A[World] --> B[Bastion Proxy\nIP pub\nOpt.LoadBalancer]
-    B --priv net--> M1[Master 1\n...\nMaster 3]
-    B --priv net--> w1[Worker 1\n...\nWorker n]
-    B --priv net--> a1[Autoscaled 1\n...\nAutoscaled n]
+    A[World] --> B[Bastion Proxy<br/>IP pub<br/>Opt.LoadBalancer]
+    B --priv net--> M1[Master 1<br/>...<br/>Master 3]
+    B --priv net--> w1[Worker 1<br/>...<br/>Worker n]
+    B --priv net--> a1[Autoscaled 1<br/>...<br/>Autoscaled n]
 ```
 
 That bastion server is the only one with a public IP, and [can be equipped with a l4 loadbalancer](./docs/l4lb.md), forwarding the traffic into the cluster, like a hetzner loadbalancer would do.

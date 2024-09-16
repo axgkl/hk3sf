@@ -6,12 +6,11 @@ We describe a setup, where the cluster is 'behind' a proxy node, with a pub ip, 
 
 ```mermaid
 flowchart LR
-    A[World] --> B[Bastion Node\nIP pub]
-    B --priv net--> M1[Master 1\n...\nMaster 3]
-    B --priv net--> w1[Worker 1\n...\nWorker n]
-    B --priv net--> a1[Autoscaled 1\n...\nAutoscaled n]
+    A[World] --> B[Bastion Proxy<br/>IP pub<br/>Opt.LoadBalancer]
+    B --priv net--> M1[Master 1<br/>...<br/>Master 3]
+    B --priv net--> w1[Worker 1<br/>...<br/>Worker n]
+    B --priv net--> a1[Autoscaled 1<br/>...<br/>Autoscaled n]
 ```
-
 Why:
 
 1. want a cost effective cluster, but
