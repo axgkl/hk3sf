@@ -1,17 +1,19 @@
 # CI Automation
 
-We provide the possibilty to automate the cluster setup using a [ CI pipeline ](../.github/workflows/ci.yml), which is triggered by parametrized by the commit message.
+We provide the possibility to run the cluster setup and various use cases and
+tests, using a [CI pipeline](../.github/workflows/ci.yml). What _exactly_
+[runs](https://github.com/axgkl/hk3sf/actions/runs/10841564368/job/30085787805)
+at git pushes is parametrized by the commit messages.
 
-See [ here ](../.github/workflows/ci.yml) which instructions are supported and also which github secrets are in use.
+See [here](../.github/workflows/ci.yml) which instructions are supported and also which github secrets are in use.
 
 Notable parameters are:
 
-- `:setup:` Creates the cluster, running [ `tests/setup.sh`  ](../tests/setup.sh). When successful, you have a running k3s cluster, with ssl and ingress set up.
+- `:setup:` Creates the cluster, running [`tests/setup.sh`](../tests/setup.sh). When successful, you have a running k3s cluster, with ssl and ingress set up.
 - `:keep:` Skips the teardown, the cluster will remain, until
-- `:rm:` Removes the cluster, running [ `tests/teardown.sh` ](../tests/teardown.sh) script.
+- `:rm:` Removes the cluster, running [`tests/teardown.sh`](../tests/teardown.sh) script.
 
 💡 Without `:keep:` the cluster will be destroyed it it was created by this run.
-
 
 ## Locally Running the CI Pipeline
 
@@ -19,8 +21,8 @@ Notable parameters are:
 - Also export `$GITHUB_ACTIONS=true`, so that the test scripts do not try to source `tests/environ` (see below)
 - Run any of the ci scripts, e.g. `test/setup.sh`
 
-
 ## Locally Accessing a Cluster Created by CI
+
 If you provided `:keep:` in the commit message, when creating it, the cluster will remain and you can access it locally.
 
 In order to access a cluster created by the CI pipeline, make sure you export the same private ssh key as `$SSH_KEY_PRIV`, which also the ci script had in _its_ environment, via a github secret, when the infrastructure was created by it.
@@ -51,6 +53,7 @@ citest-master2   Ready    control-plane,etcd,master   8h    v1.30.2+k3s2
 citest-master3   Ready    control-plane,etcd,master   8h    v1.30.2+k3s2
 
 ```
+
 hf:
 
 ```bash
@@ -63,10 +66,6 @@ citest-proxy
 citest-master3
 citest-master2
 citest-master1
-
-  …/gitops❯ ci log hello                                                      ?⇡
-Running http service at 80 port
-Running http service at 80 port
-Running http service at 80 port
 ```
+
 

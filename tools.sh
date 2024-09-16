@@ -111,7 +111,14 @@ function show_funcs {
     out "$S\n󰊕 Module $1 $m:$O"
     grep -E '^function [a-z_]+ {' <"$1.sh" | grep -iE "${2:-}" | sed -e 's/function //' | cut -d '{' -f 1 | sort || true
 }
+
+function grepfunc {
+    vi -c "lua require('telescope.builtin').live_grep({prompt_title = 'Functions. Ctrl-c supported', default_text = '^function.*$1', prompt_prefix='󰊕 🔍 ', attach_mappings = function(_, map) map('i', '<C-c>', function() vim.cmd('qa!') end); return true end  })" ./conf.sh
+    exit
+}
+
 function exit_help {
+    test -z "${1:-}" || grepfunc "$1"
     out "${S}Installs NATed k3s on Hetzner Cloud, using vitobotta/hetzner-k3s$O"
     show_config "$@"
     show_funcs main "$@" | sort
