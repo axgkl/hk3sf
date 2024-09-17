@@ -87,8 +87,8 @@ General layout of your script is therefore:
 ```bash
 CONFIGVAR1=CONFIGVAL1
 ...
-source <dir>/main.sh "$@" # causes exit when an arg is passed, i.e. a function name
-
+source <dir>/main.sh "$@" # exits after execution of any given arguments in $@ (e.g. funcname, params). 
+#Otherwise continues with the functions below:
 setup_function1
 setup_function2
 ...
