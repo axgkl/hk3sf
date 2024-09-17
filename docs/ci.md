@@ -58,10 +58,6 @@ hf:
 
 ```bash
   …/gitops❯ ci servers .name                                                  ?⇡
-s1
-s2
-s3
-s4
 citest-proxy
 citest-master3
 citest-master2
