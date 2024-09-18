@@ -2,6 +2,7 @@ DFLT_IMG="${IMG:-ubuntu-24.04}" # https://github.com/vitobotta/hetzner-k3s/issue
 DFLT_TYPE="${SERVER:-cx22}"
 
 : "${NAME:=k3s}"
+
 : "${HK_AUTOSCALED_COUNT:=3}"
 : "${HK_AUTOSCALED_IMG:=$DFLT_IMG}"
 : "${HK_AUTOSCALED_TYPE:=$DFLT_TYPE}"
@@ -27,19 +28,23 @@ DFLT_TYPE="${SERVER:-cx22}"
 : "${FN_LINK_KUBECONFIG:=$HOME/.kubeconfig}"
 : "${FN_LOG:=$CACHE_DIR/install.log}"
 : "${FN_SSH_KEY:=$HOME/.ssh/id-$NAME}"
+# Optional - for gitops. token needs only content r/w rights on the repo
+: "${GH_GITOPS_USER:=}"
+: "${GH_GITOPS_REPO:=}"
+: "${GH_GITOPS_TOKEN:=}"
 # Read only token - in use for most functions:
 : "${HCLOUD_TOKEN:=}"
 : "${HCLOUD_TOKEN_WRITE:=}"
 : "${HK_HOST_NETWORK:=0}" # 10.$HK_HOST_NETWORK.0.0/16 net, named "ten-$HK_HOST_NETWORK"
 : "${HK_HOST_NETWORK_NAME:=ten-$HK_HOST_NETWORK}"
 : "${HK_LOCATION:=hel1}"
-: "${LOG_DBG_CLR:=2;37}"
 : "${HK_MASTERS_ARE_WORKERS:=true}"
 : "${HK_MASTERS_COUNT:=3}"
 : "${HK_MASTERS_IMG:=$DFLT_IMG}"
 : "${HK_MASTERS_TYPE:=$DFLT_TYPE}"
 : "${HK_REGISTRY_MIRROR:=true}"
 : "${HK_SSH_PORT:=22}"
+: "${LOG_DBG_CLR:=2;37}"
 : "${SSH_TUNNEL_PORT:=16443}"
 # Optional - otherwise created
 : "${SSH_KEY_PRIV:=}"
@@ -52,5 +57,4 @@ DFLT_TYPE="${SERVER:-cx22}"
 : "${HK_WORKERS_COUNT:=0}"
 : "${HK_WORKERS_IMG:=$DFLT_IMG}"
 : "${HK_WORKERS_TYPE:=$DFLT_TYPE}"
-
 #URL_HETZNER_K3S="https://github.com/vitobotta/hetzner-k3s/releases/download/v2.0.0.rc2/hetzner-k3s-linux-amd64"
