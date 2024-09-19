@@ -5,11 +5,13 @@ SSH_KEY_NAME_=""
 
 function ensure_local_ssh_key {
     local fn d && fn="${FN_SSH_KEY}" && d="$(dirname "$fn")"
+    test -n "$fn.pub" && test -n "$fn" && ok "SSH key present [$fn]" && return
     test ! -e "$d" && mkdir -p "$d" && chmod 700 "$d"
     rm -f "$fn.previous"
     if [ -e "$fn" ]; then cp "$fn" "$fn.previous"; fi
     if [ -n "$SSH_KEY_PRIV" ]; then
         echo -e "$SSH_KEY_PRIV" | grep . >"$fn" && chmod 600 "$fn"
+        out "Creating $fn.pub"
         ssh-keygen -y -f "$fn" >"$fn.pub"
     else
         run ssh-keygen -q -t ecdsa -N '' -f "$fn"

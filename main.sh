@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
-me="${BASH_SOURCE[0]}"
-builtin cd "$(dirname "$me")"
-ME="$(basename $0)"
+builtin cd "$(dirname "${BASH_SOURCE[0]}")"
+me="$(pwd)/main.sh"
+#ME="$(basename $0)"
 source "./conf.sh"
 source "./tools.sh"
+echo "$0"
+exit
 
 trap 'test -z "$tailpid" || kill $tailpid' EXIT SIGINT
 
