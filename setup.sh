@@ -233,7 +233,7 @@ function ensure_k3s_via_proxy {
     ok "🎇 Got the cluster [$(dt "$t0") sec]. Cost: $(cost)"
 }
 
-function enable_local_kubectl {
+function ensure_local_kubectl {
     shw get_kubeconfig
     shw set_ssh_config
     shw "$0" k get nodes

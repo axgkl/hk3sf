@@ -15,4 +15,5 @@ set +a
 here="${BASH_SOURCE[0]:-$0}"
 here="$( builtin cd "$( dirname "${here}" )" && pwd )"
 alias ci="$here/ci-cluster.sh"
+echo -e 'to enable kubectl:\nci ensure_local_kubectl' >&2
 

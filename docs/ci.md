@@ -31,10 +31,10 @@ In order to access a cluster created by the CI pipeline, make sure you export th
 
 - Source [`tests/environ`](../tests/environ), in bash or zsh.
 - That set an alias `ci`, which provides access to all functions of this repo
-- Fetch the kubeconfig with `ci enable_local_kubectl`, like the `setup.sh` script does as well:
+- Fetch the kubeconfig with `ci ensure_local_kubectl`, like the `setup.sh` script does as well:
 
 ```bash
-  …/gitops❯ ci enable_local_kubectl                                          ✘!?
+  …/gitops❯ ci ensure_local_kubectl                                          ✘!?
 ✔️ Loading module ./setup.sh
 󰊕 get_kubeconfig
 󰊕 link_kubeconfig

@@ -7,7 +7,7 @@ shw ensure_requirements
 shw ensure_proxy_server
 shw ensure_k3s_via_proxy
 shw ensure_proxy_is_loadbalancer
-shw enable_local_kubectl
+shw ensure_local_kubectl
 shw ensure_ingress_nginx
 shw ensure_cert_manager
 report
