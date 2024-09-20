@@ -2,7 +2,7 @@
 # shellcheck disable=SC2034 # Unused vars
 # Always loaded
 
-here="$(cd "$(dirname "$me")" && pwd)"
+here="$(builtin cd "$(dirname "$me")" && pwd)"
 declare -A icons=(
     ["networks"]='🖧 '
     ["ssh_keys"]='🔑'

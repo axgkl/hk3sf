@@ -1,14 +1,31 @@
-function ensure_flux {
+function ensure_flux_gh {
     shw flux check --pre || die "Pre-check failed"
     export GITHUB_TOKEN="${GH_GITOPS_TOKEN:-}"
     shw flux bootstrap github --owner="$GH_GITOPS_USER" --repository="other$GH_GITOPS_REPO" --branch=main --path=./clusters/my-cluster --personal
     shw flux check || die "flux post-check failed"
 }
+
+function ensure_flux_gl {
+    have flux || die "flux not installed" "run e.g. binenv install flux"
+    return
+    export GITLAB_TOKEN="${GL_GITOPS_TOKEN:?Require GL_GITOPS_TOKEN}"
+    shw flux check --pre || die "flux pre-check failed"
+    #shw flux bootstrap gitlab --owner="$GL_GITOPS_USER" --repository="$GL_GITOPS_REPO" --hostname=gitlab.axiros.com --branch=main --token-auth
+    shw flux bootstrap gitlab \
+        --owner="${GITOPS_OWNER:?require GITOPS_OWNER}" --path="${GITOPS_PATH:-require GITOPS_PATH}" \
+        --repository="k8s" --branch=main --hostname=gitlab.axiros.com --token-auth
+    shw flux check || die "flux post-check failed"
+    shw flux_state
+}
+function flux_state {
+    shw kubectl -n flux-system get GitRepository
+    shw kubectl -n flux-system get Kustomization
+}
+
 function ensure_flux_helm {
     shw flux create source helm starboard-operator --url https://aquasecurity.github.io/helm-charts --namespace starboard-system
 }
 false && . ./tools.sh && . ./conf.sh || true
-
 # function digitalocean_dns_add {
 #     local host="$1" ip="$2" domain="$3" token="${DNS_API_TOKEN:-}"
 #     test -z "$token" && die "No \$DNS_API_TOKEN"
@@ -65,7 +82,7 @@ false && . ./tools.sh && . ./conf.sh || true
 #     # Note: $DNS_PROVIDER can be also a function, which sets all up as well (but you have to take care for idempotency)
 #     proxy_is_lb || die "Proxy server is not a load balancer" "Manually add DNS record for the load balancer once created by CCM"
 #     test -z "${1:-}" && get_proxy_ips
-#     local ip="${1:-$IP_PROXY_}"
+#     local ip="${1:-$IP_PROXY_}"lu
 #     local d="${DOMAIN:-}"
 #     test -z "$d" && die "No domain set"
 #     local subdom="${d%%.*}"

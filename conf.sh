@@ -28,10 +28,15 @@ DFLT_TYPE="${SERVER:-cx22}"
 : "${FN_LINK_KUBECONFIG:=$HOME/.kubeconfig}"
 : "${FN_LOG:=$CACHE_DIR/install.log}"
 : "${FN_SSH_KEY:=$HOME/.ssh/id-$NAME}"
-# Optional - for gitops. token needs only content r/w rights on the repo
-: "${GH_GITOPS_USER:=}"
-: "${GH_GITOPS_REPO:=}"
-: "${GH_GITOPS_TOKEN:=}"
+
+# Optional. token needs only content r/w rights on the repo
+: "${GITOPS_BRANCH:=main}"
+: "${GITOPS_HOST:=}"
+: "${GITOPS_OWNER:=}"
+: "${GITOPS_PATH:=}"
+: "${GITOPS_REPO:=}"
+: "${GITOPS_TOKEN:=}"
+
 # Read only token - in use for most functions:
 : "${HCLOUD_TOKEN:=}"
 : "${HCLOUD_TOKEN_WRITE:=}"
