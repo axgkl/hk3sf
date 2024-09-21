@@ -130,6 +130,16 @@ function ensure_server {
                 sleep 1 && echo -n "."
             done
         done
+        shw ssh "root@$ip" curl -s ipinfo.io/ip | grep -q "$ip" || {
+            #https://github.com/vitobotta/hetzner-k3s/issues/451
+            #cannot handle this, we will get that same ip all the time in a loop #seems so rare, that we just die
+            #only way would be to create another one, delete it, then retry with this one or so
+            die "tough luck - our ip $ip seems to be not acceptable by some internet services. Try again."
+            # destroy_by_name "$name" servers
+            # #shw sleep 30 # wait safely for cleanup. this event is rare
+            # shw ensure_server "$shortname"
+            # return $?
+        }
         test "$port" != 22 && {
             echo "
           echo 'Port $port' >> /etc/ssh/sshd_config

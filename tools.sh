@@ -62,7 +62,7 @@ function shw {
 hirindent() {
     test "${hir_:-}" == '0' && return
     local c="└─"
-    for ((i = 1; i < hir_; i++)); do c+="──"; done
+    for ((i = 1; i < hir_; i++)); do c="└─$c"; done
     echo -n "$c "
 }
 
