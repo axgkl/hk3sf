@@ -15,7 +15,7 @@ function clear_ip_from_known_hosts { local fn="$HOME/.ssh/known_hosts" && mkdir 
 
 # will establish a tunnel to the proxy server and keep it up:
 function start_ssh_tunnel {
-    nohup "$exe" ssh sshargs '-f -N' "$NAME-proxy" >/dev/null 2>&1 || true
+    nohup "$exedir/$exe" ssh sshargs '-f -N' "$NAME-proxy" >/dev/null 2>&1 || true
     ok "ssh tunnel to $NAME-proxy established permanently" "$exe stop_ssh_tunnel to kill it"
 }
 function stop_ssh_tunnel { kill "$(pgrep -f "ssh.*$NAME-proxy")" 2>/dev/null || true; }
@@ -42,6 +42,11 @@ function report {
     (echo -e "Name € IP HW DC" && jq -r '. | "\(.name) \(.price) \(.ip) \(.cores)C\u00A0\(.mem)GB\u00A0\(.disk)TB \(.dc)"' <<<"$(server_report)") | column -t
     echo -e "${S}Loadbalancer$O"
     (echo "Name € IP DC" && jq -r '. | "\(.name) \(.price) \(.ip) \(.dc)"' <<<"$(lb_report)") | column -t || true
+    if [[ -n "${GITOPS_REPO:-}" ]]; then
+        echo -e "${S}Gitops$O"
+        import flux_state
+        shw flux_state
+    fi
     #(echo "Name € IP DC" && jq -r '. | "\(.name) \(.price) \(.ip) \(.dc)"' <<<"$(lb_report)")
     #(echo "Name € IP DC" && jq -r '. | "\(.name) \(.price) \(.ip) \(.dc)"' <<<"$(lb_report)") | column -t
 }

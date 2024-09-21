@@ -22,6 +22,7 @@ no_die=false
 retval_=""
 tailpid=""
 type=""
+hir_="${hir_:-0}"
 
 IP_PROXY_=""
 IP_PROXY_PRIV_=""
@@ -36,7 +37,7 @@ function run {
     test -z "$HCLOUD_TOKEN_WRITE" || shcmd="${shcmd//$HCLOUD_TOKEN_WRITE/<hcloud token write>}"
     test -z "$DNS_API_TOKEN" || shcmd="${shcmd//$DNS_API_TOKEN/<dns token>}"
     echo -e "🟣 cmd $(dt) $shcmd" >>"$FN_LOG"
-    res="$(execute "$@" 2>>"$FN_LOG")" && st=0 || st=1
+    res="$(exec_or_dry "$@" 2>>"$FN_LOG")" && st=0 || st=1
     echo -e "$res" >>"$FN_LOG"
     test "$st" != 0 && {
         die "Command failed: $shcmd" "Check $FN_LOG for details"
@@ -45,13 +46,29 @@ function run {
     test -z "$res" && return 0
     echo -e "$res"
 }
-function execute {
+function exec_or_dry {
     test "${dryrun:-}" = true && out "🟡 $* $L [dryrun set]$O" && return 0
     "$@"
 }
 function die { $no_die && return 1 || out "🟥 $S$1\n$L${2:-}" && exit 1; }
 function out { echo -e "$*$O" | tee -a "$FN_LOG" >/dev/stderr; }
-function shw { out "$L󰊕 $*" && execute "$@"; }
+function shw {
+    out "$L󰊕 $(hirindent)$*"
+    hirset 1
+    exec_or_dry "$@"
+    hirset -1 $?
+}
+
+hirindent() {
+    test "${hir_:-}" == '0' && return
+    local c="└─"
+    for ((i = 1; i < hir_; i++)); do c+="──"; done
+    echo -n "$c "
+}
+
+hirset() {
+    hir_=$((hir_ + $1)) && return "${2:-0}"
+}
 function shw_code { type bat >/dev/null && echo "$2" | bat -pp --language "$1" 1>&2 || out "$2"; }
 function newer { [ -f "$1" ] && (($(date +%s) - $(stat -c %Y "$1") < $2)); }
 function ok {
@@ -158,7 +175,7 @@ function import() {
 
 function load_pkgs() {
     for k in "$here/pkg"/*.sh; do
-        k="${k##*/}" && ok "Loading $k"
+        k="${k##*/}" && ok "${L}Loading module $k$O"
         # shellcheck source=./pkg/base.sh
         . "$here/pkg/$k"
     done

@@ -238,7 +238,7 @@ function ensure_k3s_via_proxy {
 function ensure_local_kubectl {
     shw get_kubeconfig
     shw set_ssh_config
-    shw "$exe" k get nodes
+    shw "$exedir/$exe" k get nodes
 }
 function get_kubeconfig {
     test -z "$IP_PROXY_" && get_proxy_ips
