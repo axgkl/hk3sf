@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 trap 'echo "Error on line $LINENO $BASH_COMMAND"' ERR
-d="$(builtin cd "$(dirname "$0")" && pwd)"
+d="$(builtin cd "$(dirname "$exe")" && pwd)"
 source "$d/../main.sh" "$@"
 report
 

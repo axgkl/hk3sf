@@ -14,6 +14,7 @@ declare -A icons=(
 
 created=false
 force=false
+dryrun=false
 img=""
 ip=""
 ip_priv=""
@@ -35,7 +36,7 @@ function run {
     test -z "$HCLOUD_TOKEN_WRITE" || shcmd="${shcmd//$HCLOUD_TOKEN_WRITE/<hcloud token write>}"
     test -z "$DNS_API_TOKEN" || shcmd="${shcmd//$DNS_API_TOKEN/<dns token>}"
     echo -e "🟣 cmd $(dt) $shcmd" >>"$FN_LOG"
-    res="$("$@" 2>>"$FN_LOG")" && st=0 || st=1
+    res="$(execute "$@" 2>>"$FN_LOG")" && st=0 || st=1
     echo -e "$res" >>"$FN_LOG"
     test "$st" != 0 && {
         die "Command failed: $shcmd" "Check $FN_LOG for details"
@@ -44,10 +45,13 @@ function run {
     test -z "$res" && return 0
     echo -e "$res"
 }
-
+function execute {
+    test "${dryrun:-}" = true && out "🟡 $* $L [dryrun set]$O" && return 0
+    "$@"
+}
 function die { $no_die && return 1 || out "🟥 $S$1\n$L${2:-}" && exit 1; }
 function out { echo -e "$*$O" | tee -a "$FN_LOG" >/dev/stderr; }
-function shw { out "$L󰊕 $*" && "$@"; }
+function shw { out "$L󰊕 $*" && execute "$@"; }
 function shw_code { type bat >/dev/null && echo "$2" | bat -pp --language "$1" 1>&2 || out "$2"; }
 function newer { [ -f "$1" ] && (($(date +%s) - $(stat -c %Y "$1") < $2)); }
 function ok {
@@ -124,7 +128,7 @@ function exit_help {
     show_funcs main "$@" | sort
     show_funcs setup "$@" | sort
     for k in "pkg"/*.sh; do show_funcs "${k//.sh/}" "$@" | sort; done
-    #out "\n$L💡 Provide module name when calling non main functions from CLI\nExample: $(basename "$0") setup get_kubeconfig$O"
+    #out "\n$L💡 Provide module name when calling non main functions from CLI\nExample: $(basename "$exe") setup get_kubeconfig$O"
     exit
 }
 function repl { python3 -c "import sys; print(sys.stdin.read().replace('$1', '''$2'''))"; }
@@ -138,13 +142,13 @@ function get_ips {
 function proxy_is_lb { test -n "${PROXY_LB:-}"; }
 
 function chk_have { type "$1" 2>/dev/null | grep -q function; }
-#chk || die "Not supported: $func" "$0 -h for all funcs"
+#chk || die "Not supported: $func" "$exe -h for all funcs"
 function import() {
     chk_have "$1" && return
     local cnt mod funcn="$1"
     mod="$(find . pkg -maxdepth 1 -type f -exec grep -l 'function '"$funcn"' ' {} \; | grep -v main.sh | sort -u || true)"
     cnt="$(echo -e "$mod" | wc -l)"
-    test -z "$mod" && die "Not supported: $funcn" "$0 -h for all funcs"
+    test -z "$mod" && die "Not supported: $funcn" "$exe -h for all funcs"
     # we can allow later to supply dir for custom mods and when given add as first to the find above
     test "$cnt" -gt 1 && out "❗ Ambiguous: $funcn" && mod="$(mod | head -n 1)"
     ok "${L}Loading module $mod$O"

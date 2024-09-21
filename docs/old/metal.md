@@ -84,7 +84,7 @@ main() {
 	case "$1" in
 	1 | getkubconfig) getkubeconfig ;;
 	2 | bastion_into_cluster) bastion_into_cluster ;;
-	*) echo "Usage: $0 {getkubconfig|bastion_into_cluster}" && exit 1 ;;
+	*) echo "Usage: $exe {getkubconfig|bastion_into_cluster}" && exit 1 ;;
 	esac
 }
 

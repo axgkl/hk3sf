@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+
 exe="$(basename "$0")"
 exedir="$(builtin cd "$(dirname "$0")" && pwd)"
 
@@ -14,8 +15,8 @@ function clear_ip_from_known_hosts { local fn="$HOME/.ssh/known_hosts" && mkdir 
 
 # will establish a tunnel to the proxy server and keep it up:
 function start_ssh_tunnel {
-    nohup "$0" ssh sshargs '-f -N' "$NAME-proxy" >/dev/null 2>&1 || true
-    ok "ssh tunnel to $NAME-proxy established permanently" "$0 stop_ssh_tunnel to kill it"
+    nohup "$exe" ssh sshargs '-f -N' "$NAME-proxy" >/dev/null 2>&1 || true
+    ok "ssh tunnel to $NAME-proxy established permanently" "$exe stop_ssh_tunnel to kill it"
 }
 function stop_ssh_tunnel { kill "$(pgrep -f "ssh.*$NAME-proxy")" 2>/dev/null || true; }
 
@@ -113,7 +114,17 @@ function destroy_by_type {
         while read -r id; do hapi DELETE "$1/$id" >/dev/null; done
 }
 
+function confirm {
+    if [[ $force == 'true' ]]; then return; fi
+    if ! tty -s; then die "Non-interactive shell detected." "Use -f or --force."; fi
+    read -p "🟧 $1 [y/N] " -n 1 -r
+    echo
+    if [[ ! "$REPLY" =~ ^[Yy]$ ]]; then die "unconfirmed" bye; fi
+    out '🟩 confirmed'
+
+}
 function destroy {
+    confirm "Are you sure you want to destroy the whole kubernetes cluster with all resources?"
     rmcache
     no_die=true
     local n id have
@@ -122,7 +133,7 @@ function destroy {
     shw destroy_by_name "$HK_HOST_NETWORK_NAME" networks
     shw destroy_by_name "$NAME" ssh_keys
     shw destroy_by_type load_balancers
-    echo "Volumes left:"
+    out "Volumes left:"
     volumes | jq .volumes
     stop_ssh_tunnel
     no_die=false
@@ -173,11 +184,12 @@ main() {
     echo "Starttime: $(date)" >"$FN_LOG"
     while [[ -n "${1:-}" ]]; do
         case "$1" in
+        -D | --dry) dryrun=true && shift ;;
         -h | --help | help | \?) shift && exit_help "$@" ;;
         -f | --force) force=true && shift ;;
         -x | --trace) set -x && shift ;;
         -d | --debug)
-            tail -f "$FN_LOG" | awk '{ printf "\033['"$LOG_DBG_CLR"'m%s\033[0m\n", $0 }' >&2 &
+            tail -f "$FN_LOG" | awk '{ printf "\033['"$LOG_DBG_CLR"'m%s\033[0m\n", $exe }' >&2 &
             tailpid=$!
             shift
             ;;

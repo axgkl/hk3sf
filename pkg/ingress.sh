@@ -21,7 +21,7 @@ function ensure_ingress_caddy {
     import render_namespace
     shw render_namespace "caddy-system" "$m"
     shw kubectl apply -f "$m"
-    ok "Caddy deployed" "Logs: $0 log caddy"
+    ok "Caddy deployed" "Logs: $exe log caddy"
 }
 
 T_CADDY_VALS="

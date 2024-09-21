@@ -175,7 +175,7 @@ function postinstall {
     local ip="${1:-$IP_PROXY_}"
     have="$(ssh "root@$ip" ls /etc)"
     $force || { grep -q "postinstalled" <<<"$have" && { ok "server is postinstalled" && return; }; }
-    shw download_hetzner_k3s "root@$ip" "$URL_HETZNER_K3S"
+    #shw download_hetzner_k3s "root@$ip" "$URL_HETZNER_K3S"
     shw ensure_base_cfg_proxy "root@$ip"
     shw ensure_tools_proxy "root@$ip" # can't do in bg, since hk3s checks for kubectl presence. might mock that later to speed things up, will only be needed after k3s is installed
     #     apt -y -qq update # post install...
@@ -218,7 +218,7 @@ function synthetize_hk3s_config {
 function have_k3s_master { test -n "$(by_name_starts servers "$NAME-master")"; }
 
 function ensure_k3s_via_proxy {
-    $force || { shw have_k3s_master && ok "Skipped - found $NAME-master node. (Run $0 -f install to force running 'hetzner-k3s create')" && return; }
+    $force || { shw have_k3s_master && ok "Skipped - found $NAME-master node. (Run $exe -f install to force running 'hetzner-k3s create')" && return; }
     get_proxy_ips
     shw synthetize_hk3s_config
     ssh "root@$IP_PROXY_" tee "config.yaml" <"$(fn_k3s_config)" >/dev/null
@@ -230,7 +230,7 @@ function ensure_k3s_via_proxy {
     local t0 && t0=$(date +%s)
     (
         export HCLOUD_TOKEN="$HCLOUD_TOKEN_WRITE"
-        ssh stream "root@$IP_PROXY_" ./hetzner-k3s create --config config.yaml
+        ssh stream "root@$IP_PROXY_" hetzner-k3s create --config config.yaml
     )
     ok "🎇 Got the cluster [$(dt "$t0") sec]. Cost: $(cost)"
 }
@@ -238,7 +238,7 @@ function ensure_k3s_via_proxy {
 function ensure_local_kubectl {
     shw get_kubeconfig
     shw set_ssh_config
-    shw "$0" k get nodes
+    shw "$exe" k get nodes
 }
 function get_kubeconfig {
     test -z "$IP_PROXY_" && get_proxy_ips
@@ -454,24 +454,32 @@ grep -q "HCLOUD_TOKEN" /etc/sshd/sshd_config || {
     systemctl daemon-reload
     systemctl reload sshd || systemctl restart ssh
 }
-chmod +x hetzner-k3s
 type binenv 2>/dev/null || sed -i '1iexport PATH="$HOME/.binenv:$PATH"' ~/.bashrc
 test -e "/root/.ssh/id_ed25519" || ssh-keygen -q -t ecdsa -N '' -f "$HOME/.ssh/id_ed25519" >/dev/null
 touch /etc/postinstalled
 EOF
 )
-
 T_INST_TOOLS=$(
-    cat <<'EOF'
-function have_ { type "$1" >/dev/null 2>&1; }
-if ! have_ kubectl || ! have_ helm; then
+    cat <<EOF
+function have_ { type "\$1" >/dev/null 2>&1; }
+if ! have_ kubectl || ! have_ helm || have_ hetzner-k3s; then
     wget -q "https://github.com/devops-works/binenv/releases/download/v0.19.11/binenv_linux_amd64" -O binenv
     chmod +x binenv && ./binenv update && ./binenv install binenv && rm binenv
-    type binenv 2>/dev/null || sed -i '1iexport PATH="$HOME/.binenv:$PATH"' ~/.bashrc
-    export PATH="$HOME/.binenv:$PATH"
-    for t in helm kubectl; do which $t || binenv install "$t"; done
+    p='${URL_BINENV_PATCHES:-}'
+    test -z "\$p" || wget -O - -q "\$p" | grep '^ ' >>\$HOME/.config/binenv/distributions.yaml
+    type binenv 2>/dev/null || sed -i '1iexport PATH="\$HOME/.binenv:\$PATH"' ~/.bashrc
+    export PATH="\$HOME/.binenv:\$PATH"
+    for t in helm kubectl hetzner-k3s; do 
+        which "\$t" && continue
+        echo "Installing '\$t'"
+        binenv install "\$t" && continue
+        binenv update -f "\$t" # new in distribution.patch.yaml
+        binenv install "\$t"
+        which "\$t" && echo "\$t" && exit 1
+    done
 fi
 EOF
 )
+#echo -e "$T_INST_TOOLS"
 
 false && . ./tools.sh && . ./main.sh || true # for LSP

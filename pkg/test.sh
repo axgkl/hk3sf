@@ -19,7 +19,7 @@ function test_autoscale {
     out "Applying $replicas replicas with node taint"
     r_autoscale_manifest "$replicas" >"$m"
     run kubectl apply -f "$m"
-    ok "Applied $replicas replicas." "$0 log 'autoscale|controller-manager' # in another terminal"
+    ok "Applied $replicas replicas." "$exe log 'autoscale|controller-manager' # in another terminal"
     local n shwn=''
     while true; do
         n="$(kubectl get nodes && kubectl get pods -n default -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.status.phase}{"\n"}{end}' | grep autoscaled-hello)"
