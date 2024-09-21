@@ -475,7 +475,8 @@ if ! have_ kubectl || ! have_ helm || have_ hetzner-k3s; then
         binenv install "\$t" && continue
         binenv update -f "\$t" # new in distribution.patch.yaml
         binenv install "\$t"
-        which "\$t" && echo "\$t" && exit 1
+        which "\$t" && continue
+        echo "\$t install failed" && exit 1
     done
 fi
 EOF
