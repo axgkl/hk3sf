@@ -23,7 +23,7 @@ LANG=en_US.UTF-8
 LC_ALL=en_US.UTF-8
 set +a
 
-if [ "${GITHUB_ACTIONS:-}" == "true" ]; then
+if [ -n "${GITHUB_ACTIONS:-}" ]; then
     # adding maks for secrets:
     for var in HCLOUD_TOKEN HCLOUD_TOKEN_WRITE DNS_API_TOKEN EMAIL DOMAIN SSH_KEY_PRIV; do
         value="${!var:-}"

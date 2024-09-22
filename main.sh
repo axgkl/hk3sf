@@ -224,4 +224,4 @@ main() {
 
 main "$@"
 
-false && . pkg/setup.sh
+false && . pkg/setup.sh || true # for LSP
