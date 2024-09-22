@@ -1,4 +1,3 @@
 #!/usr/bin/env bash
-
-test -z "${GITHUB_ACTIONS:-}" && . tests/environ # local testing
+source "tests/environ"
 source "./main.sh" --force rm

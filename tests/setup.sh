@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
-test -z "${GITHUB_ACTIONS:-}" && . tests/environ # local testing
-trap 'echo "Error on line $LINENO $BASH_COMMAND"' ERR
-
+source "tests/environ"
 source "./main.sh" "$@"
 shw ensure_requirements
 shw ensure_proxy_server

@@ -1,7 +1,16 @@
 # github actions env
-eval "$(pass show gk/axgkl/gitopstestenv)" # See github action for those key/values
-
+# HCLOUD_TOKEN
+# HCLOUD_TOKEN_WRITE
+# DNS_API_TOKEN
+# EMAIL
+# DOMAIN="citest1. ... .com"
+# SSH_KEY_PRIV='
+# -----BEGIN OPENSSH PRIVATE KEY-----
+# ...'
 set -a
+eval "$(sops -d environ.priv.age)"
+# from: sops --age=age1vca4gv4wn4kxkl0h8dfthmj5qqnstumnuy3mjfzk46dwxvszmdvsq7kytv --encrypt --in-place environ.priv.age
+# edit values in vi: sops environ.priv.age (with priv key available)
 NAME="citest"
 DNS_TTL=60
 DNS_PROVIDER=digitalocean
@@ -11,7 +20,7 @@ LANG=en_US.UTF-8
 LC_ALL=en_US.UTF-8
 set +a
 
-
+# for local testing against a cluster created by github:
 here="${BASH_SOURCE[0]:-$0}"
 here="$( builtin cd "$( dirname "${here}" )" && pwd )"
 alias ci="$here/ci-cluster.sh"
