@@ -19,6 +19,8 @@ LOCATION="hel1"
 LANG=en_US.UTF-8
 LC_ALL=en_US.UTF-8
 set +a
+echo "::add-mask::$LOCATION"
+echo "location: $LOCATION"
 
 # for local testing against a cluster created by github:
 here="${BASH_SOURCE[0]:-$0}"
