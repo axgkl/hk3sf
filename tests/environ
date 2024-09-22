@@ -8,7 +8,7 @@
 # -----BEGIN OPENSSH PRIVATE KEY-----
 # ...'
 set -a
-eval "$(sops -d environ.priv.age)"
+eval "$(sops -d tests/environ.priv.age)"
 # from: sops --age=age1vca4gv4wn4kxkl0h8dfthmj5qqnstumnuy3mjfzk46dwxvszmdvsq7kytv --encrypt --in-place environ.priv.age
 # edit values in vi: sops environ.priv.age (with priv key available)
 NAME="citest"
