@@ -5,9 +5,10 @@ test -f "$d/keys.txt" || {
     echo -e "${AGE_SECRET_KEY}" >"$d/keys.txt"
 }
 set -x
+cd /tmp
 wget -q https://github.com/devops-works/binenv/releases/download/v0.19.11/binenv_linux_amd64
-chmod +x binenv
 mv binenv_linux_amd64 binenv
+chmod +x binenv
 ./binenv update
 ./binenv install binenv
 rm binenv
