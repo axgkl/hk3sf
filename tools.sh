@@ -150,6 +150,7 @@ function exit_help {
 function repl { python3 -c "import sys; print(sys.stdin.read().replace('$1', '''$2'''))"; }
 
 function get_ips {
+    test -z "$1" && die "get_ips: No name given"
     local s && s="$(by_name servers "$NAME-$1")"
     ip="$(jq -r '.public_net.ipv4.ip' <<<"$s")"
     ip_priv="$(jq -r '.private_net[0].ip' <<<"$s")"

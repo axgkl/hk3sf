@@ -493,4 +493,4 @@ EOF
 )
 #echo -e "$T_INST_TOOLS"
 
-false && . ./tools.sh && . ./main.sh || true # for LSP
+false && . ../tools.sh && . ../main.sh || true # for LSP
