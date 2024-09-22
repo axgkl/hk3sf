@@ -10,6 +10,7 @@ mv binenv_linux_amd64 binenv
 chmod +x binenv
 ./binenv update
 ./binenv install binenv
+rm -f binenv
 
 for tool in sops age kubectl helm; do
     which "${tool}" || binenv install "${tool}"

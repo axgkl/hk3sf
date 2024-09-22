@@ -7,7 +7,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     env:
-      PATH: /root/.binenv:$PATH
+      PATH: /root/.binenv:/usr/sbin:/usr/bin:/bin:/sbin
       AGE_SECRET_KEY: ${{ secrets.AGE_SECRET_KEY }}
       act: ${{ github.event.head_commit.message }}
       keep: ${{ contains(github.event.head_commit.message, ':keep:') }}
