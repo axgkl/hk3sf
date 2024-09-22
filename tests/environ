@@ -20,12 +20,17 @@ LANG=en_US.UTF-8
 LC_ALL=en_US.UTF-8
 set +a
 
-for var in HCLOUD_TOKEN HCLOUD_TOKEN_WRITE DNS_API_TOKEN EMAIL DOMAIN SSH_KEY_PRIV; do
-  echo "::add-mask::${!var}"
+
+for var in HCLOUD_TOKEN XXXX HCLOUD_TOKEN_WRITE DNS_API_TOKEN EMAIL DOMAIN SSH_KEY_PRIV; do
+  value="${!var:-}"
+  while IFS= read -r line; do
+    test -z "$line" || echo "::add-mask::$line"
+  done <<< "$value"
 done
 echo "location: $LOCATION"
 echo "dns: $DNS_API_TOKEN"
 echo "email: $EMAIL"
+echo "ssh: $SSH_KEY_PRIV"
 
 # for local testing against a cluster created by github:
 here="${BASH_SOURCE[0]:-$0}"
