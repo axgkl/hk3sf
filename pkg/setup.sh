@@ -5,18 +5,18 @@ SSH_KEY_NAME_=""
 
 function ensure_local_ssh_key {
     local fn d && fn="${FN_SSH_KEY}" && d="$(dirname "$fn")"
-    test -n "$fn.pub" && test -n "$fn" && ok "SSH key present [$fn]" && return
+    test -e "$fn.pub" && test -e "$fn" && ok "SSH key present [$fn]" && return
     test ! -e "$d" && mkdir -p "$d" && chmod 700 "$d"
     rm -f "$fn.previous"
     if [ -e "$fn" ]; then cp "$fn" "$fn.previous"; fi
     if [ -n "$SSH_KEY_PRIV" ]; then
         echo -e "$SSH_KEY_PRIV" | grep . >"$fn" && chmod 600 "$fn"
         out "Creating $fn.pub"
-        ssh-keygen -y -f "$fn" >"$fn.pub"
+        shw ssh-keygen -y -f "$fn" >"$fn.pub"
     else
-        run ssh-keygen -q -t ecdsa -N '' -f "$fn"
+        shw run ssh-keygen -q -t ecdsa -N '' -f "$fn"
     fi
-    run chmod 600 "$fn"
+    shw run chmod 600 "$fn"
     if [ -e "$fn.previous" ]; then
         if cmp -s "$fn" "$fn.previous"; then
             out "🔑 SSH key unchanged"
