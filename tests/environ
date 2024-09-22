@@ -19,8 +19,13 @@ LOCATION="hel1"
 LANG=en_US.UTF-8
 LC_ALL=en_US.UTF-8
 set +a
-echo "::add-mask::$LOCATION"
+
+for var in HCLOUD_TOKEN HCLOUD_TOKEN_WRITE DNS_API_TOKEN EMAIL DOMAIN SSH_KEY_PRIV; do
+  echo "::add-mask::${!var}"
+done
 echo "location: $LOCATION"
+echo "dns: $DNS_API_TOKEN"
+echo "email: $EMAIL"
 
 # for local testing against a cluster created by github:
 here="${BASH_SOURCE[0]:-$0}"
