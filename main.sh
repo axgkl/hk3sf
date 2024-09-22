@@ -1,13 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-exe="$(basename "$0")"
-exedir="$(builtin cd "$(dirname "$0")" && pwd)"
+me="${BASH_SOURCE[0]}"
+here="$(builtin cd "$(dirname "$me")" && pwd)"
 
-builtin cd "$(dirname "${BASH_SOURCE[0]}")"
-me="$(pwd)/main.sh"
-source "./conf.sh"
-source "./tools.sh"
+# exe="$(basename "$0")"
+# exedir="$(builtin cd "$(dirname "$0")" && pwd)"
+#
+# builtin cd "$(dirname "${BASH_SOURCE[0]}")"
+# me="$(pwd)/main.sh"
+source "$here/conf.sh"
+source "$here/tools.sh"
 
 trap 'test -z "$tailpid" || kill $tailpid' EXIT SIGINT
 
@@ -15,8 +18,8 @@ function clear_ip_from_known_hosts { local fn="$HOME/.ssh/known_hosts" && mkdir 
 
 # will establish a tunnel to the proxy server and keep it up:
 function start_ssh_tunnel {
-    nohup "$exedir/$exe" ssh sshargs '-f -N' "$NAME-proxy" >/dev/null 2>&1 || true
-    ok "ssh tunnel to $NAME-proxy established permanently" "$exe stop_ssh_tunnel to kill it"
+    nohup "$0" ssh sshargs '-f -N' "$NAME-proxy" >/dev/null 2>&1 || true
+    ok "ssh tunnel to $NAME-proxy established permanently" "$0 stop_ssh_tunnel to kill it"
 }
 function stop_ssh_tunnel { kill "$(pgrep -f "ssh.*$NAME-proxy")" 2>/dev/null || true; }
 
@@ -211,8 +214,8 @@ main() {
         load_pkgs
         #show_config
         rmcache
-        . ./setup.sh # the only non pkg not always loaded
-        return       # calling script can set up w/o imports now
+        . "$here/pkg/setup.sh"
+        return # calling script can set up w/o imports now
     }
     import "$func"
     "$func" "$@"

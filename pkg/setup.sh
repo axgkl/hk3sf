@@ -75,7 +75,7 @@ function ensure_proxy_is_loadbalancer {
     c="$(echo -e "$c" | jq .)"
     shw setup_ext_lb_caddy "$IP_PROXY_" "$c"
     test -z "$DNS_PROVIDER" && ok "Loadbalancer is configured" "Make sure you have DNS configured ($ME dns_add)"
-    . pkg/dns.sh
+    import dns_add
     shw dns_add "$IP_PROXY_"
 }
 
@@ -248,7 +248,7 @@ function ensure_k3s_via_proxy {
 function ensure_local_kubectl {
     shw get_kubeconfig
     shw set_ssh_config
-    shw "$exedir/$exe" k get nodes
+    shw "$0" k get nodes
 }
 function get_kubeconfig {
     test -z "$IP_PROXY_" && get_proxy_ips

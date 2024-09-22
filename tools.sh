@@ -2,7 +2,6 @@
 # shellcheck disable=SC2034 # Unused vars
 # Always loaded
 
-here="$(builtin cd "$(dirname "$me")" && pwd)"
 declare -A icons=(
     ["networks"]='🖧 '
     ["ssh_keys"]='🔑'
@@ -163,7 +162,8 @@ function chk_have { type "$1" 2>/dev/null | grep -q function; }
 function import() {
     chk_have "$1" && return
     local cnt mod funcn="$1"
-    mod="$(find . pkg -maxdepth 1 -type f -exec grep -l 'function '"$funcn"' ' {} \; | grep -v main.sh | sort -u || true)"
+    mod="$(find "${here:-}/pkg" -maxdepth 1 -type f -exec grep -l '^function '"$funcn"' ' {} \; | grep -v main.sh | sort -u || true)"
+    echo "${mod:-}"
     cnt="$(echo -e "$mod" | wc -l)"
     test -z "$mod" && die "Not supported: $funcn" "$exe -h for all funcs"
     # we can allow later to supply dir for custom mods and when given add as first to the find above
