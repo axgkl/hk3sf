@@ -1,4 +1,8 @@
+# vim: ft=sh
+# shellcheck disable=SC2034
+
 # github actions env
+set -a
 # HCLOUD_TOKEN
 # HCLOUD_TOKEN_WRITE
 # DNS_API_TOKEN
@@ -7,7 +11,6 @@
 # SSH_KEY_PRIV='
 # -----BEGIN OPENSSH PRIVATE KEY-----
 # ...'
-set -a
 eval "$(sops -d tests/environ.priv.age)"
 # from: sops --age=age1vca4gv4wn4kxkl0h8dfthmj5qqnstumnuy3mjfzk46dwxvszmdvsq7kytv --encrypt --in-place environ.priv.age
 # edit values in vi: sops environ.priv.age (with priv key available)
@@ -20,21 +23,22 @@ LANG=en_US.UTF-8
 LC_ALL=en_US.UTF-8
 set +a
 
-
-for var in HCLOUD_TOKEN XXXX HCLOUD_TOKEN_WRITE DNS_API_TOKEN EMAIL DOMAIN SSH_KEY_PRIV; do
-  value="${!var:-}"
-  while IFS= read -r line; do
-    test -z "$line" || echo "::add-mask::$line"
-  done <<< "$value"
-done
-echo "location: $LOCATION"
-echo "dns: $DNS_API_TOKEN"
-echo "email: $EMAIL"
-echo "ssh: $SSH_KEY_PRIV"
+if [ "$GITHUB_ACTIONS" == "true" ]; then
+    # adding maks for secrets:
+    for var in HCLOUD_TOKEN HCLOUD_TOKEN_WRITE DNS_API_TOKEN EMAIL DOMAIN SSH_KEY_PRIV; do
+        value="${!var:-}"
+        while IFS= read -r line; do
+            test -z "$line" || echo "::add-mask::$line" # github feature, hides those values from now on
+        done <<<"$value"
+    done
+# # not shown from now on in github actions:
+# echo "dns: $DNS_API_TOKEN"
+# echo "email: $EMAIL"
+# echo "ssh: $SSH_KEY_PRIV" ...
+fi
 
 # for local testing against a cluster created by github:
 here="${BASH_SOURCE[0]:-$0}"
-here="$( builtin cd "$( dirname "${here}" )" && pwd )"
+here="$(builtin cd "$(dirname "${here}")" && pwd)"
 alias ci="$here/ci-cluster.sh"
 echo -e 'to enable kubectl:\nci ensure_local_kubectl' >&2
-
