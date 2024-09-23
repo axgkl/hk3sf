@@ -21,24 +21,33 @@ HK_HOST_NETWORK=7
 LOCATION="hel1"
 LANG=en_US.UTF-8
 LC_ALL=en_US.UTF-8
+
+GITOPS_HOST=gh
+GITOPS_OWNER=axgkl
+GITOPS_BRANCH=master
+GITOPS_REPO=hk3sf-fluxtest
+GITOPS_PATH="flux/clusters/staging"
 set +a
 
+# adding masks for secrets, should not be shown in logs:
 if [ -n "${GITHUB_ACTIONS:-}" ]; then
-    # adding maks for secrets:
-    for var in HCLOUD_TOKEN HCLOUD_TOKEN_WRITE DNS_API_TOKEN EMAIL DOMAIN SSH_KEY_PRIV; do
-        value="${!var:-}"
-        while IFS= read -r line; do
+    secrets="$(sops -d tests/environ.priv.age | grep '=' | cut -d '=' -f 1)"
+    for key in $secrets; do
+        [[ "$key" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]] || continue
+        echo "Masking value for secret: $key"
+        value="${!key:-}"
+        while IFS= read -r line; do                     #multiline support
             test -z "$line" || echo "::add-mask::$line" # github feature, hides those values from now on
         done <<<"$value"
     done
+fi
 # # not shown from now on in github actions:
 # echo "dns: $DNS_API_TOKEN"
 # echo "email: $EMAIL"
 # echo "ssh: $SSH_KEY_PRIV" ...
-fi
 
 # for local testing against a cluster created by github:
 here="${BASH_SOURCE[0]:-$0}"
 here="$(builtin cd "$(dirname "${here}")" && pwd)"
 alias ci="$here/ci-cluster.sh"
-echo -e 'to enable kubectl:\nci ensure_local_kubectl' >&2
+echo -e 'Activated ci cluster environ. To enable kubectl:\nci ensure_local_kubectl' >&2

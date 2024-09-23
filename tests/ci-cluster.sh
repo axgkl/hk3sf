@@ -2,7 +2,7 @@
 trap 'echo "Error on line $LINENO $BASH_COMMAND"' ERR
 d="$(builtin cd "$(dirname "$0")" && pwd)"
 . "$d/environ"
-#. "$d/../main.sh" "$@"
+. "$d/../main.sh" "$@"
 echo "$NAME"
 report
 

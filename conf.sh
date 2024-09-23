@@ -31,7 +31,7 @@ DFLT_TYPE="${SERVER:-cx22}"
 
 # Optional. token needs only content r/w rights on the repo
 : "${GITOPS_BRANCH:=main}"
-: "${GITOPS_HOST:=}"
+: "${GITOPS_HOST:=gh}"
 : "${GITOPS_OWNER:=}"
 : "${GITOPS_PATH:=}"
 : "${GITOPS_REPO:=}"

@@ -1,3 +1,28 @@
+templ1="https://github.com/fluxcd/flux2-kustomize-helm-example"
+
+function flx {
+    have flux || die "flux not installed" "run e.g. binenv install flux"
+    cmd="${1:-help}"
+    shift
+    case "$cmd" in
+    ct1 | clone-template) shw flux_clone_template_1 "$@" ;;
+    *) die "Usage: See pkg/flux.sh" ;;
+    esac
+}
+function flux_ensure_tools {
+    for tool in flux age-keygen sops; do
+        shw have "$tool" || shw binenv install "$tool"
+    done
+}
+shw binenv install flux age-keygen sops
+function flux_clone_template_1 {
+    local dir="${1:-flux}"
+    test -e "$dir" && $force && shw rm -rf "$dir.orig" && shw mv "$dir" "$dir.orig"
+    test -e "$dir" && die "Directory exists: $dir" "Remove or specify another directory"
+    shw git clone "$templ1" "$dir"
+    shw mv "$dir/.git" "$dir/.gitorig"
+}
+
 function ensure_flux_gh {
     shw flux check --pre || die "Pre-check failed"
     export GITHUB_TOKEN="${GH_GITOPS_TOKEN:-}"
@@ -6,7 +31,6 @@ function ensure_flux_gh {
 }
 
 function ensure_flux_gl {
-    have flux || die "flux not installed" "run e.g. binenv install flux"
     export GITLAB_TOKEN="${GITOPS_TOKEN:?Require GL_GITOPS_TOKEN}"
     shw flux check --pre || die "flux pre-check failed"
     shw flux bootstrap gitlab \
