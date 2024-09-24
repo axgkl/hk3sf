@@ -49,6 +49,9 @@ jobs:
           git add .
           ../tests/flux.sh
           )
+      - name: Cat logfile on failure
+        if: failure()
+        run: cat /home/runner/work/hk3sf/hk3sf/fluxrepo/tmp.citest/install.log
 
       - name: Teardown
         # runs even if previous steps failed, when keep is not given and setup is given:
