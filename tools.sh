@@ -119,6 +119,7 @@ function ssh {
     local host="$1" && shift
     local o1=StrictHostKeyChecking=accept-new
     export HCLOUD_TOKEN #="$HCLOUD_TOKEN_WRITE"
+    ensure_local_ssh_key
     local a="-p $HK_SSH_PORT -o SendEnv=HCLOUD_TOKEN $sa -o $o1 -i $FN_SSH_KEY $host "
     # shellcheck disable=SC2086
     $stream && "$SSH_" $a "$@"

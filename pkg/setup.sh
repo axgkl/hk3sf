@@ -5,7 +5,7 @@ SSH_KEY_NAME_=""
 
 function ensure_local_ssh_key {
     local fn d && fn="${FN_SSH_KEY}" && d="$(dirname "$fn")"
-    test -e "$fn.pub" && test -e "$fn" && ok "SSH key present [$fn]" && return
+    test -e "$fn.pub" && test -e "$fn" && return
     test ! -e "$d" && mkdir -p "$d" && chmod 700 "$d"
     rm -f "$fn.previous"
     if [ -e "$fn" ]; then cp "$fn" "$fn.previous"; fi
