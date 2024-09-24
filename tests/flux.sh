@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
 export GITHUB_TOKEN="$GITOPS_TOKEN"
-
-source "tests/environ"
-source "./main.sh" "$@"
-kubectl config current-context | grep -q "^$NAME-" || shw ensure_local_kubectl
-shw flux ensure_tools
+here=$(dirname $0)
+source "$here/environ"
+source "$here/../main.sh" "$@"
 
 function clear_cluster {
     shw flux uninstall --silent
@@ -13,16 +11,11 @@ function clear_cluster {
     done
 }
 
-function flux_test {
-    shw cd ..
-
-    shw git config user.name 'github-actions[bot]'
-    shw git config user.email 'github-actions[bot]@users.noreply.github.com'
-
-}
+shw ensure_local_kubectl
+shw flux ensure_tools
 shw clear_cluster
-(
-    shw flux_test
-)
+# templ1="https://github.com/fluxcd/flux2-kustomize-helm-example"
+shw flux_start_from_template_1 clean push
+shw flux_bootstrap
 
-false && . ../pkg/kubectl.sh && . ../main.sh && . ../tools.sh || true
+false && . ../pkg/flux.sh && . ../pkg/kubectl.sh && . ../main.sh && . ../tools.sh || true

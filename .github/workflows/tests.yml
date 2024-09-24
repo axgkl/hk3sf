@@ -39,18 +39,15 @@ jobs:
         run: |
           . tests/environ # exports all secret
           export repo="https://axgkl:$GITOPS_TOKEN@github.com/axgkl/hk3sf-fluxtest.git"
-          echo "$repo"
+          echo "test repos is: $repo"
+          git clone "$repo" fluxrepo
           (
-            # Clone the repository
-            git clone "$repo" fluxrepo
-            cd fluxrepo
-            git config user.name 'github-actions[bot]'
-            git config user.email 'github-actions[bot]@users.noreply.github.com'
-            date >> ./date
-            pwd
-            git add .
-            git commit -m "Automated commit from GitHub Actions"
-            git push "$repo"
+          cd fluxrepo
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          date >> ./last.hk3sf-fluxtest.date
+          git add .
+          ../tests/flux.sh
           )
 
       - name: Teardown
