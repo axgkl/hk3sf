@@ -11,7 +11,7 @@ function clear_cluster {
     done
 }
 
-shw ensure_local_kubectl
+shw ensure_local_kubectl force
 shw flux ensure_tools
 shw clear_cluster
 # templ1="https://github.com/fluxcd/flux2-kustomize-helm-example"

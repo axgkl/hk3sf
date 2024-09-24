@@ -246,7 +246,9 @@ function ensure_k3s_via_proxy {
 }
 
 function ensure_local_kubectl {
-    $force || { kubectl config current-context | grep -q "^$NAME-" && return; }
+    local nochk="${force:-false}"
+    test "${1:-}" = force && nochk=true && shift
+    $nochk || { kubectl config current-context | grep -q "^$NAME-" && return; }
     shw get_kubeconfig
     shw set_ssh_config
     shw "$0" k get nodes
