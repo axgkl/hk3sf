@@ -38,7 +38,7 @@ jobs:
         if: contains(env.act, ':flux:')
         run: |
           . tests/environ # exports all secret
-          export repo="https://axgkl:$GITHUB_TOKEN@github.com/axgkl/hk3sf-fluxtest.git"
+          export repo="https://axgkl:$GITOPS_TOKEN@github.com/axgkl/hk3sf-fluxtest.git"
           echo "$repo"
           (
             # Clone the repository
