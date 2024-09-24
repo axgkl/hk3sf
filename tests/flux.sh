@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 export GITHUB_TOKEN="$GITOPS_TOKEN"
 here=$(dirname $0)
+echo "here: $here"
+set -x
 source "$here/environ"
+exit
 source "$here/../main.sh" "$@"
 
 function clear_cluster {
