@@ -34,6 +34,7 @@ function kube {
     $stream && "$b" "$@"
     $stream || run "$b" "$@"
 }
+function have_namespace { kubectl get namespace "$1" >/dev/null 2>&1; }
 function cost {
     local s && s=$(server_report | jq -s '[.[] | .price] | add')
     local l && l=$(lb_report | jq -s '[.[] | .price] | add')
@@ -45,11 +46,11 @@ function report {
     (echo -e "Name € IP HW DC" && jq -r '. | "\(.name) \(.price) \(.ip) \(.cores)C\u00A0\(.mem)GB\u00A0\(.disk)TB \(.dc)"' <<<"$(server_report)") | column -t
     echo -e "${S}Loadbalancer$O"
     (echo "Name € IP DC" && jq -r '. | "\(.name) \(.price) \(.ip) \(.dc)"' <<<"$(lb_report)") | column -t || true
-    if [[ -n "${GITOPS_REPO:-}" ]]; then
+    have_namespace flux-system && {
         echo -e "${S}Gitops$O"
         import flux_state
         shw flux_state
-    fi
+    }
     #(echo "Name € IP DC" && jq -r '. | "\(.name) \(.price) \(.ip) \(.dc)"' <<<"$(lb_report)")
     #(echo "Name € IP DC" && jq -r '. | "\(.name) \(.price) \(.ip) \(.dc)"' <<<"$(lb_report)") | column -t
 }

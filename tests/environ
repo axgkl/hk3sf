@@ -41,13 +41,11 @@ if [ -n "${GITHUB_ACTIONS:-}" ]; then
         done <<<"$value"
     done
 fi
-# # not shown from now on in github actions:
-# echo "dns: $DNS_API_TOKEN"
-# echo "email: $EMAIL"
-# echo "ssh: $SSH_KEY_PRIV" ...
 
+test -z "${1:-}" || return
 # for local testing against a cluster created by github:
 here="${BASH_SOURCE[0]:-$0}"
 here="$(builtin cd "$(dirname "${here}")" && pwd)"
+
 alias ci="$here/ci-cluster.sh"
 echo -e 'Activated ci cluster environ. To enable kubectl:\nci ensure_local_kubectl' >&2

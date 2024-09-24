@@ -34,6 +34,25 @@ jobs:
         if: contains(env.act, ':setup:')
         run: bash ./tests/setup.sh test_http_svc_nginx
 
+      - name: Flux Tests
+        if: contains(env.act, ':flux:')
+        run: |
+          . tests/environ # exports all secret
+          export repo="https://axgkl:$GITHUB_TOKEN@github.com/axgkl/hk3sf-fluxtest.git"
+          echo "$repo"
+          (
+            # Clone the repository
+            git clone "$repo" fluxrepo
+            cd fluxrepo
+            git config user.name 'github-actions[bot]'
+            git config user.email 'github-actions[bot]@users.noreply.github.com'
+            date >> ./date
+            pwd
+            git add .
+            git commit -m "Automated commit from GitHub Actions"
+            git push "$repo"
+          )
+
       - name: Teardown
         # runs even if previous steps failed, when keep is not given and setup is given:
         if: ${{ always() && !env.keep && contains(env.act, ':setup:') }}

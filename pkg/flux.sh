@@ -1,20 +1,16 @@
 templ1="https://github.com/fluxcd/flux2-kustomize-helm-example"
 
-function flx {
-    have flux || die "flux not installed" "run e.g. binenv install flux"
-    cmd="${1:-help}"
-    shift
+function flux {
+    cmd="${1:-}"
     case "$cmd" in
-    ct1 | clone-template) shw flux_clone_template_1 "$@" ;;
-    *) die "Usage: See pkg/flux.sh" ;;
+    ct1 | clone_template) shift && shw flux_clone_template_1 "$@" ;;
+    ensure_tools) shift && flux_ensure_tools "$@" ;;
+    *) kube flux "$@" ;;
     esac
 }
 function flux_ensure_tools {
-    for tool in flux age-keygen sops; do
-        shw have "$tool" || shw binenv install "$tool"
-    done
+    for tool in flux age-keygen sops; do shw have "$tool" || shw binenv install "$tool"; done
 }
-shw binenv install flux age-keygen sops
 function flux_clone_template_1 {
     local dir="${1:-flux}"
     test -e "$dir" && $force && shw rm -rf "$dir.orig" && shw mv "$dir" "$dir.orig"
