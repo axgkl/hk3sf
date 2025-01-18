@@ -65,14 +65,14 @@ function ensure_ingress_nginx {
 
 T_NGINX_VALS=$(
     # https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/
-    cat <<'EOF'
+    cat <<EOF
 controller:
   kind: DaemonSet
   service:
     externalIPs: []
     nodePorts:
-      http: 30080
-      https: 30443
+      http: "${INGR_HTTP_NODE_PORT:-}" 
+      https: "${INGR_HTTPS_NODE_PORT:-}" 
   config:
     use-proxy-protocol: "true"
     use-forwarded-headers: "true" # when others set XForwFor we take it
