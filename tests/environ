@@ -35,7 +35,7 @@ set +a
 
 # adding masks for secrets, should not be shown in logs:
 if [ -n "${GITHUB_ACTIONS:-}" ]; then
-    secrets="$(sops -d tests/environ.priv.age | grep '=' | cut -d '=' -f 1)"
+    secrets="$(sops -d "$here/environ.priv.age" | grep '=' | cut -d '=' -f 1)"
     for key in $secrets; do
         [[ "$key" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]] || continue
         echo "Masking value for secret: $key"
