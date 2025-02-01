@@ -1,0 +1,169 @@
+#!/usr/bin/env bash
+help='Shortcuts:
+- A: api-resources
+- F9: purge all caches
+actions:
+
+'
+set -euo pipefail
+set -a
+CACHEDIR="${CACHEDIR:-$HOME/.cache/kzf}"
+FNLOG="${FNLOG:-&2}"
+DC="" # api cache dir
+EXE="${EXE:-kubectl}"
+CMDFILE=""
+set +a
+qry=""
+pth=""
+sel=""
+gen=""
+lvl=0
+rfr=false
+exit=false
+kzfcache() { echo "$CACHEDIR/kzf"; }
+pthcache() { echo "$(kzfcache)/$pth"; }
+H="\x1b[1;32m"
+L="\x1b[2;36m"
+O="\x1b[0m"
+N="Ⓝ"
+US=$(printf '\037') # unit separator
+out() { echo "$@" >>"${FNLOG:-}"; }
+die() { out "$@" && exit 1; }
+wcl() { printf "%2s" "$(wc -l <"$1")"; }
+wcd() { printf "%2s" "$(find "$1" -type d | wc -l)"; }
+age() {
+    mod_time=$(stat -c %Y "$1")
+    now=$(date +%s)
+    echo $((now - mod_time))
+}
+function shw { notify-send "Running: $*" && "$@"; }
+function list:generic {
+    eval kubectl "$pth" --no-headers
+}
+
+#num_dirs=$(find "$path" -type d | wc -l)
+function api-resources {
+    local ns line rsc l
+    if [ "$rfr" = "true" ] || [ ! -f "$DC/raw" ]; then
+        shw kubectl api-resources --no-headers -o wide | sort >"$DC/raw" || true
+    fi
+    while IFS= read -r line; do
+        rsc="${line%% *}"
+        ns=$(echo "$line" | awk '{print $4}')
+        test "$ns" = "false" && echo "$rsc" >>"$(kzfcache)/_nonamespace" && ns="$US"
+        test "$ns" = "true" && ns=" $N $US"
+        rfr=false
+        obj-resources "$rsc"
+        l="$(wcd "$DC/$rsc")"
+        # shellcheck disable=SC2001
+        echo "$line" | sed -e "s|$rsc|${L}$l $H$US$rsc$US${L}$ns|g"
+    done <"$DC/raw"
+    #echo "qry='!0 '\'" >"${d}/_fzf"
+}
+
+function obj-resources {
+    local d="$DC/$1"
+    if [ "$rfr" = "true" ] || [ ! -f "$DC/raw" ]; then
+        kubectl get "$rsc" --all-namespaces --ignore-not-found \ --no-headers -o wide >"$d/$rsc" 2>/dev/null || continue
+    fi
+}
+cacheok() {
+    return 1
+    test -e "$d/_items"
+}
+catcache() { cat "$d/_items"; }
+spec_by_pth() {
+    lvl=$(echo "$pth" | tr -cd '/' | wc -c)
+    echo "lvl: $lvl"
+    if [[ "${lvl:-}" -eq 0 ]]; then
+        gen="api-resources"
+    fi
+}
+function new-fzf-feed {
+    local out && DC="$(pthcache)"
+    test -e "$DC" || mkdir -p "$DC"
+    cacheok && catcache && return
+    /bin/rm -f "${DC}/_items"
+    spec_by_pth
+    eval "${gen}" | tee -a "${DC}/_items"
+    rfr=false
+}
+function show {
+    local out ret=0
+    DC="$(pthcache)"
+    new-fzf-feed
+    notify-send "Query: $pth"
+    exit
+    qry=""
+    test -e "$DC/_fzf" && set -a && . "$DC/_fzf" && set +a
+    #cat /etc/hosts | fzf --query "$qry"
+    #exit
+    #$0 prev api-resources configmaps foo bar
+    out="$(
+        new-fzf-feed | fzf \
+            --ansi \
+            --query "$qry" \
+            --print-query \
+            --expect=A,X,ctrl-X \
+            --preview="$0 prev '$pth' '{}'" \
+            --preview-window=right:70%:wrap --height=100%
+    )" || ret=$?
+    echo end
+    notify-send "ret: $ret"
+    notify-send "Selected: $out"
+    qry=$(echo -e "$out" | head -n 1)
+    act=$(echo -e "$out" | head -n 2 | tail -n 1)
+    itm=$(echo -e "$out" | head -n 3 | tail -n 1)
+    notify-send "Selected: $act"
+    case "$act" in
+    A) pth="api-resources" && return ;;
+    ctrl-X) rm -rf "$(kzfcache)/pths" && notify-send allwiped && exit ;;
+    X) rm -rf "$(kzfcache)/pths/get"* && notify-send getwiped && exit ;;
+    esac
+    echo "ret: $ret out: $out. q: $qry, a: $act, c: $itm"
+    test $ret -ne 0 && exit
+    rscs="$(echo "$itm" | cut -d"$US" -f2)"
+    pth="get $rscs"
+    grep -q "$N" <<<"${itm}" && pth="$pth --all-namespaces"
+}
+function preview {
+    echo "$*" >foo
+    date
+    exit
+
+    set -x
+    pth="$1" && shift
+    echo "all: $1" >foo
+    echo "all: $*" >bar
+    rsc="$(echo "$*" | cut -d"$US" -f2)"
+    local since fn && since='' && fn="$(pthcache)/$rsc"
+    test -e "$fn" && since=" [$(age "$fn")sec]"
+    echo -e "👁️$since $H$rsc$L $*$O"
+    test -e "$fn" && cat "$fn" || echo "no data"
+    #eval "$(pth "$@")" | tee "${CACHEDIR}/kzf.outp"
+    exit
+}
+function pth { echo "$EXE $*"; }
+function clip { echo -e "$1" | xclip -selection clipboard; }
+
+function main {
+    for arg in "$@"; do
+        case "$arg" in
+        prev) shift && preview "$@" ;;
+        -f=* | --pthfile=*) CMDFILE="${arg#*=}" ;;
+        --exe=*) export EXE="${arg#*=}" ;;
+        --cachedir=*) export CACHEDIR="${arg#*=}" ;;
+        *) out "ignoring arg: $arg" ;;
+        esac
+    done
+    pth="api-resources"
+    FNLOG="$(kzfcache)/log" && export FNLOG
+    rm -f "${FNLOG:-}"
+    while [ "$exit" != true ]; do
+        show
+    done
+    cat "${CACHEDIR}/kzf.outp"
+    local pth && pth="$(pth "$sel")" && clip "$pth"
+    echo -e "clipbord: \x1b[1;32m$pth\x1b[0m" >/dev/stderr
+}
+main "$@"

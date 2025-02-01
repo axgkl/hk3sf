@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# that thing is a resource hog
+
+CPU_THRESHOLD=80.0
+MEM_THRESHOLD=500000 # in KB
+
+while true; do
+    procs="$(pgrep -c shellcheck)" || true
+    if [[ "$procs" -gt 3 ]]; then
+        notify-send "Killing ALL $procs shellcheck processes."
+        pkill -9 shellcheck
+    elif [ "$procs" -gt 1 ]; then                                     # one we allow, at start its high
+        proc=$(ps aux | grep 'shellcheck' | awk '{print $2, $3, $6}') # PID, CPU, MEM
+        if [ -n "$proc" ]; then
+            echo "$proc" | while read -r PID CPU MEM; do
+                echo "PID: $PID, CPU: $CPU, MEM: $MEM"
+                if (($(echo "$CPU > $CPU_THRESHOLD" | bc -l))) || [ "$MEM" -gt "$MEM_THRESHOLD" ]; then
+                    notify-send "Killing shellcheck process (PID: $PID) due to high resource usage."
+                    kill -9 "$PID"
+                fi
+            done
+        fi
+    fi
+    sleep 20
+done

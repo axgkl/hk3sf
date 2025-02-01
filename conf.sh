@@ -1,6 +1,16 @@
 DFLT_IMG="${IMG:-ubuntu-24.04}" # https://github.com/vitobotta/hetzner-k3s/issues/387#issuecomment-2248702070 ff
 DFLT_TYPE="${SERVER:-cx22}"
 
+ALIASES='
+e:enter
+fr:flux_reconcile
+i:create
+hf:helpfull
+k:kubectl
+rm:destroy
+wc:watch_shellcheck
+'
+
 : "${NAME:=k3s}"
 
 : "${HK_AUTOSCALED_COUNT:=3}"
@@ -49,6 +59,10 @@ DFLT_TYPE="${SERVER:-cx22}"
 : "${HK_MASTERS_TYPE:=$DFLT_TYPE}"
 : "${HK_REGISTRY_MIRROR:=true}"
 : "${HK_SSH_PORT:=22}"
+
+: "${INGR_HTTP_NODE_PORT:-30080}"
+: "${INGR_HTTPS_NODE_PORT:-30443}"
+
 : "${LOG_DBG_CLR:=2;37}"
 : "${SSH_TUNNEL_PORT:=16443}"
 # Optional - otherwise created

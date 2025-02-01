@@ -22,13 +22,32 @@ retval_=""
 tailpid=""
 type=""
 hir_="${hir_:-0}"
-
+helpfullcmds="get nodes;get pods -A;get svc -A"
 IP_PROXY_=""
 IP_PROXY_PRIV_=""
 SSH_="$(which ssh)"
 SSH_KEY_FINGERPRINT_=""
 START_TIME_=$(date +%s)
 
+declare -A aliases
+function set_aliases {
+    for defs in "${ALIASES:-}" "${custaliases:-}"; do
+        while IFS=: read -r key value; do
+            [ -z "$key" ] && continue
+            aliases["$key"]="$value"
+        done <<<"$defs"
+    done
+}
+function helpfull {
+    local cmd fn="${CACHE_DIR:-}/helpfullcmds"
+    if [[ "${1:-show}" = "show" ]]; then
+        test -f "$fn" || helpfull "${helpfullcmds:-}"
+        "$here/bin/kzf" --cmdfile="$fn" --cachedir="$CACHE_DIR"
+    else
+        echo -e "$1" | sed -e 's|;|\n|g' | grep -v '^\s*$' >"$fn" # write new list
+    fi
+}
+#notify-send "$0 $*"
 function dt { local x="${1:-$START_TIME_}" && echo $(($(date +%s) - x)); }
 function run {
     local res st
@@ -127,6 +146,37 @@ function ssh {
     $stream || run "$SSH_" $a "$@" # oneshot
 }
 
+function ensure_local_ssh_key {
+    local fn d && fn="${FN_SSH_KEY}" && d="$(dirname "$fn")"
+    test -e "$fn.pub" && test -e "$fn" && return
+    test ! -e "$d" && mkdir -p "$d" && chmod 700 "$d"
+    rm -f "$fn.previous"
+    if [ -e "$fn" ]; then cp "$fn" "$fn.previous"; fi
+    if [ -n "$SSH_KEY_PRIV" ]; then
+        echo -e "$SSH_KEY_PRIV" | grep . >"$fn" && chmod 600 "$fn"
+        out "Creating $fn.pub"
+        shw ssh-keygen -y -f "$fn" >"$fn.pub"
+    else
+        shw run ssh-keygen -q -t ecdsa -N '' -f "$fn"
+    fi
+    shw run chmod 600 "$fn"
+    if [ -e "$fn.previous" ]; then
+        if cmp -s "$fn" "$fn.previous"; then
+            out "🔑 SSH key unchanged"
+        else
+            out "🔑 SSH key changed - previous one in $fn.previous"
+        fi
+    fi
+    ok "SSH key present [$fn]"
+}
+function repl_in_files {
+    local search_dir="$1" && search_pattern="${2:?req search pattern}" && replace_pattern="${3:?req replace pattern}"
+    find "$search_dir" -type f | while read -r file; do
+        if grep -q "$search_pattern" "$file"; then
+            shw sed -i "s|$search_pattern|$replace_pattern|" "$file"
+        fi
+    done
+}
 function show_funcs {
     local m="" && test -z "${2:-}" || m="[$2]"
     out "$S\n󰊕 Module $1 $m:$O"
@@ -137,6 +187,9 @@ function grepfunc {
     vi -c "lua require('telescope.builtin').live_grep({prompt_title = 'Functions. Ctrl-c supported', default_text = '^function.*$1', prompt_prefix='󰊕 🔍 ', attach_mappings = function(_, map) map('i', '<C-c>', function() vim.cmd('qa!') end); return true end  })" ./conf.sh
     exit
 }
+
+#💡 on linux shellcheck runs amok from time to time
+function watch_shellcheck { "$here/bin/watch_shellcheck"; }
 
 function exit_help {
     test -z "${1:-}" || grepfunc "$1"
@@ -167,7 +220,7 @@ function import() {
     mod="$(find "${here:-}/pkg" -maxdepth 1 -type f -exec grep -l '^function '"$funcn"' ' {} \; | grep -v main.sh | sort -u || true)"
     echo "${mod:-}"
     cnt="$(echo -e "$mod" | wc -l)"
-    test -z "$mod" && die "Not supported: $funcn" "$exe -h for all funcs"
+    test -z "$mod" && die "Not supported: $funcn" "$0 -h for all funcs"
     # we can allow later to supply dir for custom mods and when given add as first to the find above
     test "$cnt" -gt 1 && out "❗ Ambiguous: $funcn" && mod="$(mod | head -n 1)"
     ok "${L}Loading module $mod$O"

@@ -10,7 +10,7 @@ EMAIL="wackeldackel@quantentunnel.de"
 DOMAIN="a1.axlc.net"
 DNS_PROVIDER="digitalocean"
 
-d=/home/gk/repos/ax/devapps/gitops
+d="$(dirname "$0")"
 source "$d/main.sh" "$@"
 
 ensure_requirements

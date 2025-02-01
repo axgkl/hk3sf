@@ -87,5 +87,9 @@ false && . ./tools.sh && . ./conf.sh && . ./pkg/ingress.sh || true
 
 This is not executed at runtime but tells [shellcheck][sc] where to look for.
 
+> ⚠️ Apropos shellcheck: On my linux box it frequently runs out of bounds, memory and cpu wise, up to halting the system, with many such processes spawned(!). Current workaround until they fix this:
+>
+>     <your hk3sf importing cmd> wc|watch_shellcheck # watches ps output for shellcheck processes and kills when running amok
+
 [sc]: https://www.shellcheck.net/
 

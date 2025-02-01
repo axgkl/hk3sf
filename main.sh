@@ -9,6 +9,7 @@ here="$(builtin cd "$(dirname "$me")" && pwd)"
 #
 # builtin cd "$(dirname "${BASH_SOURCE[0]}")"
 # me="$(pwd)/main.sh"
+custaliases="${ALIASES:-}"
 source "$here/conf.sh"
 source "$here/tools.sh"
 
@@ -166,7 +167,7 @@ function show_config {
 function nodes() { kubectl get nodes; }
 function pods() { kubectl get pods --all-namespaces; }
 
-function log() {
+function klog() {
     local flow=false match=''
     local m="${1:?Require match string}" && shift
     while [[ -n "${1:-}" ]]; do
@@ -179,7 +180,7 @@ function log() {
     while read -r p && read -r n; do
         $flow || run kubectl logs "$p" -n "$n" | grep -E "$match" || true
         #$flow && (kubectl logs "$p" -n "$n" --tail=5 -f | grep -E "$match") &
-        $flow && shw kubectl stream logs "$p" -n "$n" --tail=5 -f | grep -E "$match" &
+        $flow && shw kubectl stream logs "$p" -n "$n" --tail=100 --follow | grep -E "$match" &
     done <<<"$pods"
     $flow && while true; do sleep 1; done
 }
@@ -191,6 +192,7 @@ main() {
     local func && func="import"
     prepare_local_dirs || die "Can't prepare files" "Check your \$CACHE_DIR and \$FN_LOG config"
     echo "Starttime: $(date)" >"$FN_LOG"
+    #echo "Command: $0 $1"
     while [[ -n "${1:-}" ]]; do
         case "$1" in
         -D | --dry) dryrun=true && shift ;;
@@ -203,13 +205,11 @@ main() {
             shift
             ;;
         -*) die "Unknown option: $1" "-h for help" ;;
-        e | enter) func="enter" && shift && break ;;
-        k | kubectl) func="kubectl" && shift && break ;;
-        i | create) func="create" && shift && break ;;
-        rm | destroy) func="destroy" && shift && break ;;
         *) func="$1" && shift && break ;;
         esac
     done
+    set_aliases
+    func="${aliases[$func]:-$func}"
     test "$func" = "help" && exit_help "$@"
     test "$func" = "import" && {
         load_pkgs
@@ -219,7 +219,7 @@ main() {
         return # calling script can set up w/o imports now
     }
     import "$func"
-    "$func" "$@"
+    shw "$func" "$@"
     exit "$?"
 }
 

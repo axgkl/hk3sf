@@ -80,7 +80,6 @@ $h
 function add_secret {
     # value can be '$foo' - it will be evaluated (to not show up in call logs)
     # we write the yqml file but with redacted values
-    #
     local fn data="" pdta="" name="${1:-require name}" && namespace=default && shift
     v() {
         local full="$1"
