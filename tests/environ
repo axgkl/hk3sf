@@ -3,10 +3,8 @@
 
 # for local testing against a cluster created by github:
 here="${BASH_SOURCE[0]:-$0}"
-here="$(builtin cd "$(dirname "${here}")" && pwd)"
-
+here="$(builtin   cd "$(dirname "${here}")" && pwd)"
 # github actions env
-set -a
 # HCLOUD_TOKEN
 # HCLOUD_TOKEN_WRITE
 # DNS_API_TOKEN
@@ -15,6 +13,7 @@ set -a
 # SSH_KEY_PRIV='
 # -----BEGIN OPENSSH PRIVATE KEY-----
 # ...'
+set -a
 eval "$(sops -d "$here/environ.priv.age")"
 # from: sops --age=age1vca4gv4wn4kxkl0h8dfthmj5qqnstumnuy3mjfzk46dwxvszmdvsq7kytv --encrypt --in-place environ.priv.age
 # edit values in vi: sops environ.priv.age (with priv key available)
@@ -30,7 +29,7 @@ GITOPS_HOST=gh
 GITOPS_OWNER=axgkl
 GITOPS_BRANCH=master
 GITOPS_REPO=hk3sf-fluxtest
-GITOPS_PATH="flux/clusters/staging"
+GITOPS_PATH="gitops/clusters/staging"
 set +a
 
 # adding masks for secrets, should not be shown in logs:

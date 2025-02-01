@@ -1,24 +1,26 @@
 #!/usr/bin/env bash
-export GITHUB_TOKEN="$GITOPS_TOKEN"
+
+# typically called from within a flux monorepo root, e.g. local clone of git@github.com:axgkl/hk3sf-fluxtest.git!!
+
+# templ1="https://github.com/fluxcd/flux2-kustomize-helm-example"
+ALIASES='
+f0:clear_cluster
+f1:flux_init_repo_from_template_1
+f2:flux_bootstrap
+'
 here=$(dirname $0)
-echo "here: $here"
-set -x
 source "$here/environ"
-exit
-source "$here/../main.sh" "$@"
+export GITHUB_TOKEN="$GITOPS_TOKEN"
 
 function clear_cluster {
     shw flux uninstall --silent
+    import clear_namespace
     for ns in default cert-manager ingress-nginx flux-system; do
         shw clear_namespace "$ns"
     done
 }
 
-shw ensure_local_kubectl force
-shw flux ensure_tools
-shw clear_cluster
-# templ1="https://github.com/fluxcd/flux2-kustomize-helm-example"
-shw flux_start_from_template_1 clean push
-shw flux_bootstrap
+source "$here/../main.sh"
+shw report
 
 false && . ../pkg/flux.sh && . ../pkg/kubectl.sh && . ../main.sh && . ../tools.sh || true

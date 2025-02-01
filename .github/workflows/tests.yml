@@ -43,12 +43,13 @@ jobs:
           git clone "$repo" fluxrepo
           (
           cd fluxrepo
-          git config user.name 'github-actions[bot]'
-          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git config user.name 'hk3sf-github-actions[bot]'
+          git config user.email 'hk3sf-github-actions[bot]@users.noreply.github.com'
           date >> ./last.hk3sf-fluxtest.date
           git add .
-          ../tests/flux.sh
+          ../tests/flux.sh "$act" # dev can send test args freely via this
           )
+
       - name: Cat logfile on failure
         if: failure()
         run: cat /home/runner/work/hk3sf/hk3sf/fluxrepo/tmp.citest/install.log
