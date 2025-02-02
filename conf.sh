@@ -60,8 +60,8 @@ wc:watch_shellcheck
 : "${HK_REGISTRY_MIRROR:=true}"
 : "${HK_SSH_PORT:=22}"
 
-: "${INGR_HTTP_NODE_PORT:-30080}"
-: "${INGR_HTTPS_NODE_PORT:-30443}"
+: "${INGR_HTTP_NODE_PORT:=30080}"
+: "${INGR_HTTPS_NODE_PORT:=30443}"
 
 : "${LOG_DBG_CLR:=2;37}"
 : "${SSH_TUNNEL_PORT:=16443}"
