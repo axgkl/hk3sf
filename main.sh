@@ -152,15 +152,19 @@ function destroy {
 function show_config {
     out "\n⚙️ Config:"
     local c && c="$(
-        for key in $(grep '^:' <conf.sh | grep -iE ''${1:-}'' | cut -d '{' -f 2 | cut -d ':' -f 1); do
+        for key in $(grep '^:' <"$here/conf.sh" | grep -iE ''${1:-}'' | cut -d '{' -f 2 | cut -d ':' -f 1); do
+            #echo "xxxx $key=${!key:-}"
             if [[ $key =~ (TOKEN|KEY) && ! $key =~ FN_ ]]; then echo "$key=${!key:0:3}..."; else echo "$key=${!key}"; fi
         done
 
     )"
+    #echo -e "$c" | column -t
     shw_code bash "$c"
 }
 
 # --------------------------------------------------------------
+# --------------------------------------------------------------
+# Convenience functions
 # Convenience functions
 # --------------------------------------------------------------
 
@@ -213,7 +217,7 @@ main() {
     test "$func" = "help" && exit_help "$@"
     test "$func" = "import" && {
         load_pkgs
-        #show_config
+        show_config
         rmcache
         . "$here/pkg/setup.sh"
         return # calling script can set up w/o imports now
