@@ -180,7 +180,7 @@ function repl_in_files {
 function show_funcs {
     local m="" && test -z "${2:-}" || m="[$2]"
     out "$S\n󰊕 Module $1 $m:$O"
-    grep -E '^function [a-z_]+ {' <"$1.sh" | grep -iE "${2:-}" | sed -e 's/function //' | cut -d '{' -f 1 | sort || true
+    grep -E '^function [a-z_]+ {' <"$1" | grep -iE "${2:-}" | sed -e 's/function //' | cut -d '{' -f 1 | sort || true
 }
 
 function grepfunc {
@@ -195,9 +195,10 @@ function exit_help {
     test -z "${1:-}" || grepfunc "$1"
     out "${S}Installs NATed k3s on Hetzner Cloud, using vitobotta/hetzner-k3s$O"
     show_config "$@"
-    show_funcs main "$@" | sort
-    show_funcs setup "$@" | sort
-    for k in "pkg"/*.sh; do show_funcs "${k//.sh/}" "$@" | sort; done
+    show_funcs "$here/main.sh" "$@" | sort
+    show_funcs "$here/pkg/setup.sh" "$@" | sort
+    #for k in "pkg"/*.sh; do show_funcs "pkg/${k//.sh/}" "$@" | sort; done
+    for k in $here/pkg/*; do show_funcs "$k" "$@"; done
     #out "\n$L💡 Provide module name when calling non main functions from CLI\nExample: $(basename "$exe") setup get_kubeconfig$O"
     exit
 }

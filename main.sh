@@ -158,7 +158,6 @@ function show_config {
         done
 
     )"
-    #echo -e "$c" | column -t
     shw_code bash "$c"
 }
 

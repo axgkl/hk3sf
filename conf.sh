@@ -71,8 +71,8 @@ wc:watch_shellcheck
 #: "${URL_HETZNER_K3S:=https://github.com/axgkl/binaries/raw/master/hetzner-k3s}"
 # xcaddy with lb4 module added - in use when proxy is lb:
 : "${URL_CADDY:=https://github.com/axgkl/binaries/raw/master/caddy-amd64}"
-: "${URL_BINENV_PATCHES:=https://github.com/axgkl/binaries/raw/master/distributions.patch.yaml}"
-: "${HK_VER:=}"
+#: "${URL_BINENV_PATCHES:=https://github.com/axgkl/binaries/raw/master/distributions.patch.yaml}"
+: "${HK_VER:=2.2.3}"
 : "${HK_VER_K3S:=v1.30.2+k3s2}" # registry mirror requires k3s > 1.30.2
 : "${HK_WORKERS_COUNT:=0}"
 : "${HK_WORKERS_IMG:=$DFLT_IMG}"

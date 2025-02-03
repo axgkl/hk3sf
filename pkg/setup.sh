@@ -151,7 +151,9 @@ function ensure_ip_forwarder {
 
 function download_hetzner_k3s { run ssh "$1" wget -q -N "$2" -O hetzner-k3s >/dev/null; }
 function ensure_base_cfg_proxy { echo -e "$T_SSHD" | ssh "$1" bash -; }
-function ensure_tools_proxy { echo -e "$T_INST_TOOLS" | ssh "$1" bash -; }
+function ensure_tools_proxy {
+    echo -e "$T_INST_TOOLS" | ssh "$1" bash -
+}
 function ensure_tools_local { eval "$T_INST_TOOLS"; }
 
 #💡 Installs tools on a new server (hk3s, binenv, kubectl, helm)
@@ -217,6 +219,7 @@ function ensure_k3s_via_proxy {
     (
         export HCLOUD_TOKEN="$HCLOUD_TOKEN_WRITE"
         ssh stream "root@$IP_PROXY_" hetzner-k3s create --config config.yaml
+        #ssh stream "root@$IP_PROXY_" hetzner-k3s --version
     )
     ok "🎇 Got the cluster [$(dt "$t0") sec]. Cost: $(cost)"
 }
@@ -448,26 +451,36 @@ test -e "/root/.ssh/id_ed25519" || ssh-keygen -q -t ecdsa -N '' -f "$HOME/.ssh/i
 touch /etc/postinstalled
 EOF
 )
+
 T_INST_TOOLS=$(
     cat <<EOF
-function have_ { type "\$1" >/dev/null 2>&1; }
-if ! have_ kubectl || ! have_ helm || have_ hetzner-k3s; then
-    wget -q "https://github.com/devops-works/binenv/releases/download/v0.19.11/binenv_linux_amd64" -O binenv
-    chmod +x binenv && ./binenv update && ./binenv install binenv && rm binenv
-    p='${URL_BINENV_PATCHES:-}'
-    test -z "\$p" || wget -O - -q "\$p" | grep '^ ' >>\$HOME/.config/binenv/distributions.yaml
-    type binenv 2>/dev/null || sed -i '1iexport PATH="\$HOME/.binenv:\$PATH"' ~/.bashrc
-    export PATH="\$HOME/.binenv:\$PATH"
-    for t in helm kubectl hetzner-k3s; do 
-        which "\$t" && continue
-        echo "Installing '\$t'"
-        binenv install "\$t" && continue
-        binenv update -f "\$t" # new in distribution.patch.yaml
-        binenv install "\$t"
-        which "\$t" && continue
-        echo "\$t install failed" && exit 1
-    done
-fi
+    function have_ { type "\$1" >/dev/null 2>&1; }
+    function install_binenv {
+        echo "Installing \$binenv"
+        wget -q "https://github.com/devops-works/binenv/releases/download/v0.19.11/binenv_linux_amd64" -O binenv
+        chmod +x binenv && ./binenv update && ./binenv install binenv && rm binenv
+        p='${URL_BINENV_PATCHES:-}'
+        test -z "\$p" || wget -O - -q "\$p" | grep '^ ' >>\$HOME/.config/binenv/distributions.yaml
+        type binenv 2>/dev/null || sed -i '1iexport PATH="\$HOME/.binenv:\$PATH"' ~/.bashrc
+        export PATH="\$HOME/.binenv:\$PATH"
+        have_ "binenv" || { echo "binenv install failed" && exit 1; }
+    }
+
+    function inst {
+        local prog="\$1"
+        local ver="\${2:-}"
+        have_ "\$prog" && return
+        echo "Installing \$prog \$ver"
+        have_ "binenv" || install_binenv
+        eval "binenv install \$prog \$ver"
+        which "\$prog" && return
+        echo "\$prog install failed" && exit 1
+    }
+    inst helm
+    inst kubectx
+    inst kubectl
+    inst hetzner-k3s '${HK_VER:-2.2.3}'
+
 EOF
 )
 #echo -e "$T_INST_TOOLS"
